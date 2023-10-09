@@ -17,6 +17,15 @@ namespace Utils
     class Shader
     {
     public:
+        enum ShaderType{
+            Vertex,
+            Fragment,
+            Geometry,
+            TessControl,
+            TessEval,
+            Compute
+        };
+
         Shader()            { mProgram = glCreateProgram(); }
 
         // Public member functions
@@ -26,7 +35,7 @@ namespace Utils
         void   destroy()    { glDeleteProgram(mProgram); }
 
         /* Attach a shader to the current shader program */
-        void attach(std::string const &filename)
+        void attach(std::string const &filename, ShaderType type)
         {
             // Load GLSL Shader from source
             std::ifstream fd(filename.c_str());
@@ -43,7 +52,7 @@ namespace Utils
 
             // Create shader object
             const char * source = src.c_str();
-            auto shader = create(filename);
+            auto shader = create(type);
             glShaderSource(shader, 1, &source, nullptr);
             glCompileShader(shader);
 
@@ -90,8 +99,8 @@ namespace Utils
         void makeBasicShader(std::string const &vertexFilename,
                              std::string const &fragmentFilename)
         {
-            attach(vertexFilename);
-            attach(fragmentFilename);
+            attach(vertexFilename, Vertex);
+            attach(fragmentFilename, Fragment);
             link();
         }
 
@@ -117,18 +126,35 @@ namespace Utils
 
 
         /* Helper function for creating shaders */
-        GLuint create(std::string const &filename)
+        GLuint create(ShaderType type)
         {
+            switch(type)
+            {
+                case Fragment:
+                    return glCreateShader(GL_FRAGMENT_SHADER);
+                case Vertex:
+                    return glCreateShader(GL_VERTEX_SHADER);
+                case Geometry:
+                    return glCreateShader(GL_GEOMETRY_SHADER);
+                case TessControl:
+                    return glCreateShader(GL_TESS_CONTROL_SHADER);
+                case TessEval:   
+                    return glCreateShader(GL_TESS_EVALUATION_SHADER);
+                case Compute:    
+                    return glCreateShader(GL_VERTEX_SHADER);
+                default:
+                    return false;
+            }
             // Extract file extension and create the correct shader type
-            auto idx = filename.rfind(".");
-            auto ext = filename.substr(idx + 1);
-                 if (ext == "comp") return glCreateShader(GL_COMPUTE_SHADER);
-            else if (ext == "frag") return glCreateShader(GL_FRAGMENT_SHADER);
-            else if (ext == "geom") return glCreateShader(GL_GEOMETRY_SHADER);
-            else if (ext == "tcs")  return glCreateShader(GL_TESS_CONTROL_SHADER);
-            else if (ext == "tes")  return glCreateShader(GL_TESS_EVALUATION_SHADER);
-            else if (ext == "vert") return glCreateShader(GL_VERTEX_SHADER);
-            else                    return false;
+            //auto idx = filename.rfind(".");
+            //auto ext = filename.substr(idx + 1);
+            //if (ext == "comp") return glCreateShader(GL_COMPUTE_SHADER);
+            //else if (ext == "frag") return glCreateShader(GL_FRAGMENT_SHADER);
+            //else if (ext == "geom") return glCreateShader(GL_GEOMETRY_SHADER);
+            //else if (ext == "tcs")  return glCreateShader(GL_TESS_CONTROL_SHADER);
+            //else if (ext == "tes")  return glCreateShader(GL_TESS_EVALUATION_SHADER);
+            //else if (ext == "vert") return glCreateShader(GL_VERTEX_SHADER);
+            //else                    return false;
         }
 
     private:

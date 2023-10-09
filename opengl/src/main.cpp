@@ -67,7 +67,7 @@ GLFWwindow* initialise()
 }
 
 
-int main(int argc, char* argb[])
+int main()
 {
     // Initialise window using GLFW
     GLFWwindow* window = initialise();

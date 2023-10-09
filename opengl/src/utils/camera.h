@@ -9,7 +9,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <GLFW/glfw3.h>
 
-
 namespace Utils
 {
     class Camera

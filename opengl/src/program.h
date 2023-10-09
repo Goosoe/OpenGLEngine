@@ -53,6 +53,4 @@ inline void printGLError() {
                 errorID, errorString.c_str());
     }
 }
-
-
 #endif
