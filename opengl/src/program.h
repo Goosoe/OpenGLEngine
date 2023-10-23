@@ -1,5 +1,3 @@
-#ifndef PROGRAM_HPP
-#define PROGRAM_HPP
 #pragma once
 
 
@@ -53,4 +51,3 @@ inline void printGLError() {
                 errorID, errorString.c_str());
     }
 }
-#endif

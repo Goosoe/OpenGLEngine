@@ -16,9 +16,19 @@ namespace Utils
 {
     class Shader
     {
+    private:
+        GLuint program;
+        GLint  status;
+        GLint  length;
+
+        // Disable copying and assignment
+        Shader(Shader const &) = delete;
+        Shader & operator =(Shader const &) = delete;
+
     public:
+
         enum ShaderType{
-            Vertex,
+            Vertex = 0,
             Fragment,
             Geometry,
             TessControl,
@@ -26,13 +36,16 @@ namespace Utils
             Compute
         };
 
-        Shader()            { mProgram = glCreateProgram(); }
+        Shader()            { program = glCreateProgram(); }
 
         // Public member functions
-        void   activate()   { glUseProgram(mProgram); }
-        void   deactivate() { glUseProgram(0); }
-        GLuint get()        { return mProgram; }
-        void   destroy()    { glDeleteProgram(mProgram); }
+        void activate()   { glUseProgram(program); }
+
+        void deactivate() { glUseProgram(0); }
+
+        GLuint get()        { return program; }
+
+        void destroy()    { glDeleteProgram(program); }
 
         /* Attach a shader to the current shader program */
         void attach(std::string const &filename, ShaderType type)
@@ -42,13 +55,13 @@ namespace Utils
             if (fd.fail())
             {
                 fprintf(stderr,
-                    "Something went wrong when attaching the Shader file at \"%s\".\n"
-                    "The file may not exist or is currently inaccessible.\n",
-                    filename.c_str());
+                        "Something went wrong when attaching the Shader file at \"%s\".\n"
+                        "The file may not exist or is currently inaccessible.\n",
+                        filename.c_str());
                 return;
             }
             auto src = std::string(std::istreambuf_iterator<char>(fd),
-                                  (std::istreambuf_iterator<char>()));
+                    (std::istreambuf_iterator<char>()));
 
             // Create shader object
             const char * source = src.c_str();
@@ -57,73 +70,69 @@ namespace Utils
             glCompileShader(shader);
 
             // Display errors
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &mStatus);
-            if (!mStatus)
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+            if (!status)
             {
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &mLength);
-                std::unique_ptr<char[]> buffer(new char[mLength]);
-                glGetShaderInfoLog(shader, mLength, nullptr, buffer.get());
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+                std::unique_ptr<char[]> buffer(new char[length]);
+                glGetShaderInfoLog(shader, length, nullptr, buffer.get());
                 fprintf(stderr, "%s\n%s", filename.c_str(), buffer.get());
             }
 
-            assert(mStatus);
+            assert(status);
 
             // Attach shader and free allocated memory
-            glAttachShader(mProgram, shader);
+            glAttachShader(program, shader);
             glDeleteShader(shader);
         }
-
 
         /* Links all attached shaders together into a shader program */
         void link()
         {
             // Link all attached shaders
-            glLinkProgram(mProgram);
+            glLinkProgram(program);
 
             // Display errors
-            glGetProgramiv(mProgram, GL_LINK_STATUS, &mStatus);
-            if (!mStatus)
+            glGetProgramiv(program, GL_LINK_STATUS, &status);
+            if (!status)
             {
-                glGetProgramiv(mProgram, GL_INFO_LOG_LENGTH, &mLength);
-                std::unique_ptr<char[]> buffer(new char[mLength]);
-                glGetProgramInfoLog(mProgram, mLength, nullptr, buffer.get());
+                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+                std::unique_ptr<char[]> buffer(new char[length]);
+                glGetProgramInfoLog(program, length, nullptr, buffer.get());
                 fprintf(stderr, "%s\n", buffer.get());
             }
 
-            assert(mStatus);
+            assert(status);
         }
-
 
         /* Convenience function that attaches and links a vertex and a
            fragment shader in a shader program */
         void makeBasicShader(std::string const &vertexFilename,
-                             std::string const &fragmentFilename)
+                std::string const &fragmentFilename)
         {
             attach(vertexFilename, Vertex);
             attach(fragmentFilename, Fragment);
             link();
         }
 
-
         /* Used for debugging shader programs (expensive to run) */
         bool isValid()
         {
             // Validate linked shader program
-            glValidateProgram(mProgram);
+            glValidateProgram(program);
 
             // Display errors
-            glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &mStatus);
-            if (!mStatus)
+            glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
+            if (!status)
             {
-                glGetProgramiv(mProgram, GL_INFO_LOG_LENGTH, &mLength);
-                std::unique_ptr<char[]> buffer(new char[mLength]);
-                glGetProgramInfoLog(mProgram, mLength, nullptr, buffer.get());
+                glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+                std::unique_ptr<char[]> buffer(new char[length]);
+                glGetProgramInfoLog(program, length, nullptr, buffer.get());
                 fprintf(stderr, "%s\n", buffer.get());
                 return false;
             }
             return true;
         }
-
 
         /* Helper function for creating shaders */
         GLuint create(ShaderType type)
@@ -156,17 +165,6 @@ namespace Utils
             //else if (ext == "vert") return glCreateShader(GL_VERTEX_SHADER);
             //else                    return false;
         }
-
-    private:
-        // Disable copying and assignment
-        Shader(Shader const &) = delete;
-        Shader & operator =(Shader const &) = delete;
-
-        // Private member variables
-        GLuint mProgram;
-        GLint  mStatus;
-        GLint  mLength;
     };
 }
-
 #endif
