@@ -9,11 +9,11 @@
 // Standard headers
 #include <string>
 
-// Constants
-const int         windowWidth     = 1024;
-const int         windowHeight    = 768;
-const std::string windowTitle     = "OpenGL";
-const GLint       windowResizable = GL_FALSE;
-const int         windowSamples   = 4;
+// constants
+constexpr int         SCR_WIDTH     = 1280;
+constexpr int         SCR_HEIGHT    = 800;
+const std::string WIND_TITLE     = "OpenGL";
+constexpr GLint       WIND_RESIZABLE = GL_FALSE;
+constexpr int         WIND_SAMPLES   = 4;
 
 #endif

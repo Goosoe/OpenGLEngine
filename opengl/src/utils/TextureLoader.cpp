@@ -25,20 +25,18 @@ void texture::loadTexture(const GLenum textureUnit, const std::string path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    if (data)
-    {
-        GLuint colorVal = GL_RGB;
-        //if its a png file extension
-        if(path.find(".png") != std::string::npos){
-            colorVal = GL_RGBA;
-        }
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, colorVal, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
+    if (!data)
     {
         std::cout << "Failed to load texture" << std::endl;
     }
+
+    GLuint colorVal = GL_RGB;
+    //if its a png file extension
+    if(path.find(".png") != std::string::npos){
+        colorVal = GL_RGBA;
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, colorVal, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
 }
