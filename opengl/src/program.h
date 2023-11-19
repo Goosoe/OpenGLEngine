@@ -10,7 +10,6 @@
 // Main OpenGL program
 void runProgram(GLFWwindow* window);
 
-
 // Function for handling keypresses
 void handleKeyboardInput(GLFWwindow* window, float deltaTime);
 

@@ -1,5 +1,3 @@
-#ifndef SHADER_HPP
-#define SHADER_HPP
 #pragma once
 
 // System headers
@@ -11,6 +9,9 @@
 #include <memory>
 #include <string>
 
+//
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace Utils
 {
@@ -23,7 +24,7 @@ namespace Utils
 
         // Disable copying and assignment
         Shader(Shader const &) = delete;
-        Shader & operator =(Shader const &) = delete;
+        Shader& operator =(Shader const &) = delete;
 
     public:
 
@@ -165,6 +166,14 @@ namespace Utils
             //else if (ext == "vert") return glCreateShader(GL_VERTEX_SHADER);
             //else                    return false;
         }
+
+        void setCameraUniforms(glm::mat4& model, glm::mat4& view, glm::mat4& projection)
+        {
+            glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        }
+
+        //TODO: create template for set uniform :)
     };
 }
-#endif
