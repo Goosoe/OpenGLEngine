@@ -1,0 +1,5 @@
+Refactor namespace names, especially for modelloader 
+
+
+Entity has Model & Shader 
+Model has Mesh

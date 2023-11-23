@@ -15,7 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -std=c++11") # -Wextra 
   if(NOT WIN32)
     set(GLAD_LIBRARIES dl)
   endif()
@@ -30,12 +30,17 @@ option (GLFW_BUILD_EXAMPLES OFF)
 option (GLFW_BUILD_TESTS OFF)
 add_subdirectory (opengl/lib/glfw)
 
+option (ASSIMP_INSTALL OFF)
+option (ASSIMP_WARNINGS_AS_ERRORS OFF)
+option (ASSIMP_BUILD_TESTS OFF)
+add_subdirectory (opengl/lib/assimp)
 #
 # Set include paths
 #
 include_directories (opengl/src/
                      opengl/lib/glad/include/
                      opengl/lib/glfw/include/
+                     opengl/lib/assimp/include
                      opengl/lib/glm/
                      opengl/lib/stb/)
 
@@ -78,6 +83,7 @@ add_executable (${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS}
 
 target_link_libraries (${PROJECT_NAME}
                        glfw
+                       assimp
                        ${GLFW_LIBRARIES}
                        ${GLAD_LIBRARIES})
 

@@ -12,6 +12,7 @@
 #include "utils/window.h"
 #include "utils/Shader.h"
 #include "utils/TextureLoader.h"
+#include "utils/ModelLoader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -29,7 +30,8 @@ float ambientLight = 0.8f;
 
 //Scene data
 const glm::vec3 lightColor (1.f, 1.f, 1.f);
-const glm::vec3 objColor (0.8f, 0.3f, 0.3f);
+const glm::vec3 objColor (1.f, 1.f, 1.f);
+//const glm::vec3 objColor (0.8f, 0.3f, 0.3f);
 
 //TODO: add resizable window feature
 glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
@@ -93,6 +95,8 @@ void runProgram(GLFWwindow* window)
 
     float prevTime = (float) glfwGetTime();
 
+    modelLoader::Model model("./opengl/models/teapot.stl");
+    
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -117,6 +121,7 @@ void runProgram(GLFWwindow* window)
 
         // object shader 
         objModel.shader.activate();
+        model.Draw(objModel.shader);
         objModel.updateCameraUniforms(view);
 
         glUniform3fv(glGetUniformLocation(objModel.shader.get(), "objColor"), 1, glm::value_ptr(objColor));
