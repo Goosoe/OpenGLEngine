@@ -2,3 +2,4 @@
 !*/.gitkeep
 compile_commands/*
 .cache/*
+.vscode

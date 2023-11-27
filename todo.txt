@@ -1,5 +1,7 @@
-Refactor namespace names, especially for modelloader 
-
+Refactor/remove namespace names, especially for modelloader 
+Refactor model loading 
+improve pipeline of making models/shaders
+Refactor program.cpp
 
 Entity has Model & Shader 
 Model has Mesh

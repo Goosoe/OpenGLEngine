@@ -1,6 +1,7 @@
 #pragma once
 #include "glm/ext/vector_float3.hpp"
 #include "utils/Shader.h"
+#include "utils/Model.h"
 
 /**
  * Responsible to hold data for basic entities. Has functions for the shader too
@@ -9,9 +10,9 @@ class Entity
 {
     private:
         // projection matrix
-        glm::mat4 projection;
+        glm::mat4 projectionMatrix;
         // model matrix
-        glm::mat4 model;
+        glm::mat4 modelMatrix;
         //location of the entity on the scene
         glm::vec3 location;
         // scale of the object on the scene
@@ -19,11 +20,13 @@ class Entity
         //TODO: add draw function for the shader and add a variable to hold the number of triangles
 
     public:
-        Utils::Shader shader;
+        Shader shader;
+        
+        Model model;
 
-        Entity(glm::mat4 projection, glm::vec3 location = glm::vec3(0.f,0.f,0.f), glm::vec3 scale = glm::vec3(1.f,1.f,1.f));
+        Entity(std::string path, glm::mat4 projection, glm::vec3 location = glm::vec3(0.f,0.f,0.f), glm::vec3 scale = glm::vec3(1.f,1.f,1.f));
 
-        const glm::mat4& getEntityMat() const { return model; }
+        const glm::mat4& getEntityMat() const { return modelMatrix; }
 
         void setLocation(glm::vec3& location);
 
@@ -42,8 +45,10 @@ class Entity
          */
         void updateCameraUniforms(glm::mat4& view, glm::mat4& projection);
 
-        //todo: make these values to be stored in entity
+        //TODO: make these values to be stored in entity - IMPLEMENT THIS AGAIN?
         void updateLightingUniforms(glm::vec3& ambient, glm::vec3& diffuse, glm::vec3& specular);
+        
+        void draw();
 
     private:
         inline void recalculateModelMatrix();

@@ -11,8 +11,7 @@
 #include "utils/DefaultObjects.h"
 #include "utils/window.h"
 #include "utils/Shader.h"
-#include "utils/TextureLoader.h"
-#include "utils/ModelLoader.h"
+//#include "utils/TextureLoader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -21,7 +20,7 @@
 
 //TODO: make this in a bettre place
 // settings
-Utils::Camera camera(glm::vec3(0, 0, 3));
+Camera camera(glm::vec3(0, 0, 3));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
@@ -54,6 +53,7 @@ void runProgram(GLFWwindow* window)
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     // Scene setup
 
     //texture loading
@@ -61,41 +61,51 @@ void runProgram(GLFWwindow* window)
 //    texture::loadTexture(GL_TEXTURE1, "./textures/banana.png");
 
     //buffers setup
-    unsigned int VAO, VBO, EBO;
+   // unsigned int VAO, VBO, EBO;
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+   // glGenVertexArrays(1, &VAO);
+   // glGenBuffers(1, &VBO);
+   // glGenBuffers(1, &EBO);
 
-    glBindVertexArray(VAO);
+   // glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(DefaultCube::vertices), DefaultCube::vertices, GL_STATIC_DRAW);
+   // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+   // glBufferData(GL_ARRAY_BUFFER, sizeof(DefaultCube::vertices), DefaultCube::vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+   // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    //glBindBuffer(GL_ARRAY_BUFFER, 0); 
-    glEnableVertexAttribArray(0);  
+   // //glBindBuffer(GL_ARRAY_BUFFER, 0); 
+   // glEnableVertexAttribArray(0);  
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DefaultCube::indices), DefaultCube::indices, GL_STATIC_DRAW);
+   // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DefaultCube::indices), DefaultCube::indices, GL_STATIC_DRAW);
      
     //shader program setup
     glm::mat4 view = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, -3.0f)); 
 
-    Entity lightModel(projection, glm::vec3(1.2f, 1.0f, 2.0f), glm::vec3(0.2f));
-    Entity objModel(projection);
+   // Entity lightModel(projection, glm::vec3(1.f, 1.0f, 1.0f), glm::vec3(1.f));
+   // Entity objModel(projection);
     
-    objModel.shader.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-    lightModel.shader.makeBasicShader("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
+   // objModel.shader.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+   // lightModel.shader.makeBasicShader("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
 
-    //light shader
-    lightModel.shader.activate();
-    glUniform4fv(glGetUniformLocation(lightModel.shader.get(), "color"), 1, &lightColor[0]);
+    //Shader basic; 
+    //basic.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+
+   // //light shader
+   // lightModel.shader.activate();
+   // glUniform4fv(glGetUniformLocation(lightModel.shader.get(), "color"), 1, &lightColor[0]);
 
     float prevTime = (float) glfwGetTime();
 
-    modelLoader::Model model("./opengl/models/teapot.stl");
+    Entity teapot("./opengl/models/teapot.stl", projection);
+    teapot.shader.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+    //
+   // teapot.model.
+   // teapot.shader.
+    //Model model("./opengl/models/teapot.stl");
+    //model.
+    //Model model2("./opengl/models/teapot.stl");
     
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -112,22 +122,38 @@ void runProgram(GLFWwindow* window)
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
         // light shader
-        lightModel.shader.activate();
-        lightModel.updateCameraUniforms(view);
+       // lightModel.shader.activate();
+       // lightModel.updateCameraUniforms(view);
 
-        glUniform3fv(glGetUniformLocation(lightModel.shader.get(), "color"), 1, glm::value_ptr(lightColor));
-        //glUniform1f(glGetUniformLocation(lightModel.shader.get(), "ambient"), ambientLight);
-        glDrawElements(GL_TRIANGLES, DefaultCube::cubeVertices, GL_UNSIGNED_INT, 0);
+       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "objColor"), 1, glm::value_ptr(objColor));
+       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "lightColor"), 1, glm::value_ptr(lightColor));
+       // glUniform1f(glGetUniformLocation(objModel.shader.get(), "ambient"), ambientLight);
+
+        //SHADER MUST BE ACTIVE BEFORE SETTING UNIFORMS
+        teapot.shader.activate();
+
+        teapot.shader.setVec3("objColor", objColor);
+        teapot.shader.setVec3("lightColor", lightColor);
+        teapot.shader.setFloat("ambient", ambientLight);
+
+        teapot.draw();
+        teapot.updateCameraUniforms(view);
+
+        teapot.shader.deactivate();
+
+       // glUniform3fv(glGetUniformLocation(lightModel.shader.get(), "color"), 1, glm::value_ptr(lightColor));
+       // //glUniform1f(glGetUniformLocation(lightModel.shader.get(), "ambient"), ambientLight);
+       // glDrawElements(GL_TRIANGLES, DefaultCube::cubeVertices, GL_UNSIGNED_INT, 0);
 
         // object shader 
-        objModel.shader.activate();
-        model.Draw(objModel.shader);
-        objModel.updateCameraUniforms(view);
+       // objModel.shader.activate();
+        //model.Draw(objModel.shader);
+       // objModel.updateCameraUniforms(view);
 
-        glUniform3fv(glGetUniformLocation(objModel.shader.get(), "objColor"), 1, glm::value_ptr(objColor));
-        glUniform3fv(glGetUniformLocation(objModel.shader.get(), "lightColor"), 1, glm::value_ptr(lightColor));
-        glUniform1f(glGetUniformLocation(objModel.shader.get(), "ambient"), ambientLight);
-        glDrawElements(GL_TRIANGLES, DefaultCube::cubeVertices, GL_UNSIGNED_INT, 0);
+       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "objColor"), 1, glm::value_ptr(objColor));
+       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "lightColor"), 1, glm::value_ptr(lightColor));
+       // glUniform1f(glGetUniformLocation(objModel.shader.get(), "ambient"), ambientLight);
+       // glDrawElements(GL_TRIANGLES, DefaultCube::cubeVertices, GL_UNSIGNED_INT, 0);
 
         prevTime = currTime;
         
@@ -139,8 +165,8 @@ void runProgram(GLFWwindow* window)
         glfwSwapBuffers(window);
     }
 
-    lightModel.shader.deactivate();
-    objModel.shader.deactivate();
+    //lightModel.shader.deactivate();
+    //objModel.shader.deactivate();
 }
 
 
@@ -159,17 +185,17 @@ void handleKeyboardInput(GLFWwindow* window, float deltaTime)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(Utils::Camera_Movement::FORWARD, deltaTime);
+        camera.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(Utils::Camera_Movement::BACKWARD, deltaTime);
+        camera.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(Utils::Camera_Movement::LEFT, deltaTime);
+        camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(Utils::Camera_Movement::RIGHT, deltaTime);
+        camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboard(Utils::Camera_Movement::UP, deltaTime);
+        camera.ProcessKeyboard(Camera_Movement::UP, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.ProcessKeyboard(Utils::Camera_Movement::DOWN, deltaTime);
+        camera.ProcessKeyboard(Camera_Movement::DOWN, deltaTime);
     // Use escape key for terminating the GLFW window
 }
 
