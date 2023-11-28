@@ -8,28 +8,28 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "utils/Camera.h"
-#include "utils/DefaultObjects.h"
 #include "utils/window.h"
 #include "utils/Shader.h"
-//#include "utils/TextureLoader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <math.h>
 
-//TODO: make this in a bettre place
+//TODO: make this in a better place
 // settings
-Camera camera(glm::vec3(0, 0, 3));
+Camera camera(glm::vec3(1, 1, 5));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-float ambientLight = 0.8f;
+const float ambientLight = 0.8f;
+const float specularVal = 0.5;
+
 //bool firstMouse = true;
 
 //Scene data
 const glm::vec3 lightColor (1.f, 1.f, 1.f);
-const glm::vec3 objColor (1.f, 1.f, 1.f);
+const glm::vec3 objColor (1.f, 1.f, 0.f);
 //const glm::vec3 objColor (0.8f, 0.3f, 0.3f);
 
 //TODO: add resizable window feature
@@ -46,67 +46,31 @@ void runProgram(GLFWwindow* window)
     glClearColor(0.3f, 0.5f, 0.8f, 1.0f);
 
     // camera
-
-    //const data setup
+    glm::mat4 view(1.f);
+    const glm::vec3 lightPos (2.f);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // Scene setup
-
-    //texture loading
-//    texture::loadTexture(GL_TEXTURE0, "./textures/wall.jpg");
-//    texture::loadTexture(GL_TEXTURE1, "./textures/banana.png");
-
-    //buffers setup
-   // unsigned int VAO, VBO, EBO;
-
-   // glGenVertexArrays(1, &VAO);
-   // glGenBuffers(1, &VBO);
-   // glGenBuffers(1, &EBO);
-
-   // glBindVertexArray(VAO);
-
-   // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   // glBufferData(GL_ARRAY_BUFFER, sizeof(DefaultCube::vertices), DefaultCube::vertices, GL_STATIC_DRAW);
-
-   // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-   // //glBindBuffer(GL_ARRAY_BUFFER, 0); 
-   // glEnableVertexAttribArray(0);  
-
-   // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-   // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(DefaultCube::indices), DefaultCube::indices, GL_STATIC_DRAW);
-     
-    //shader program setup
-    glm::mat4 view = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, -3.0f)); 
-
-   // Entity lightModel(projection, glm::vec3(1.f, 1.0f, 1.0f), glm::vec3(1.f));
-   // Entity objModel(projection);
-    
-   // objModel.shader.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-   // lightModel.shader.makeBasicShader("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
-
-    //Shader basic; 
-    //basic.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-
-   // //light shader
-   // lightModel.shader.activate();
-   // glUniform4fv(glGetUniformLocation(lightModel.shader.get(), "color"), 1, &lightColor[0]);
-
     float prevTime = (float) glfwGetTime();
+    Entity light("./opengl/models/teapot.stl", projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
+    light.shader.makeBasicShader("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
+    light.shader.activate();
+    light.shader.setVec3("color", lightColor);
+    light.shader.deactivate();
 
-    Entity teapot("./opengl/models/teapot.stl", projection);
+    Entity teapot("./opengl/models/teapot.stl", projection, glm::vec3(0.3f, 0.3f, 0.3f));
     teapot.shader.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-    //
-   // teapot.model.
-   // teapot.shader.
-    //Model model("./opengl/models/teapot.stl");
-    //model.
-    //Model model2("./opengl/models/teapot.stl");
-    
+    teapot.shader.activate();
+    teapot.shader.setVec3("lightColor", lightColor);
+    teapot.shader.setFloat("specularVal", specularVal);
+    teapot.shader.setFloat("ambient", ambientLight);
+    teapot.shader.setVec3("lightPos", lightPos);
+    teapot.shader.setVec3("objColor", objColor);
+    teapot.shader.deactivate();
+
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
     {
@@ -121,39 +85,25 @@ void runProgram(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        // light shader
-       // lightModel.shader.activate();
-       // lightModel.updateCameraUniforms(view);
-
-       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "objColor"), 1, glm::value_ptr(objColor));
-       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "lightColor"), 1, glm::value_ptr(lightColor));
-       // glUniform1f(glGetUniformLocation(objModel.shader.get(), "ambient"), ambientLight);
-
         //SHADER MUST BE ACTIVE BEFORE SETTING UNIFORMS
+        light.shader.activate();
+
+        light.draw();
+        light.updateCameraUniforms(view);
+
+        light.shader.deactivate();
+
+
         teapot.shader.activate();
 
-        teapot.shader.setVec3("objColor", objColor);
-        teapot.shader.setVec3("lightColor", lightColor);
-        teapot.shader.setFloat("ambient", ambientLight);
+    //    teapot.shader.setVec3("lightPos", lightPos);
 
         teapot.draw();
         teapot.updateCameraUniforms(view);
+        teapot.shader.setVec3("cameraPos", camera.Position);
 
         teapot.shader.deactivate();
-
-       // glUniform3fv(glGetUniformLocation(lightModel.shader.get(), "color"), 1, glm::value_ptr(lightColor));
-       // //glUniform1f(glGetUniformLocation(lightModel.shader.get(), "ambient"), ambientLight);
-       // glDrawElements(GL_TRIANGLES, DefaultCube::cubeVertices, GL_UNSIGNED_INT, 0);
-
-        // object shader 
-       // objModel.shader.activate();
-        //model.Draw(objModel.shader);
-       // objModel.updateCameraUniforms(view);
-
-       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "objColor"), 1, glm::value_ptr(objColor));
-       // glUniform3fv(glGetUniformLocation(objModel.shader.get(), "lightColor"), 1, glm::value_ptr(lightColor));
-       // glUniform1f(glGetUniformLocation(objModel.shader.get(), "ambient"), ambientLight);
-       // glDrawElements(GL_TRIANGLES, DefaultCube::cubeVertices, GL_UNSIGNED_INT, 0);
+        //SHADER DISABLE
 
         prevTime = currTime;
         

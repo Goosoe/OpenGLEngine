@@ -13,10 +13,10 @@ class Entity
         glm::mat4 projectionMatrix;
         // model matrix
         glm::mat4 modelMatrix;
-        //location of the entity on the scene
-        glm::vec3 location;
         // scale of the object on the scene
         glm::vec3 scale;
+        //location of the entity on the scene
+        glm::vec3 location;
         //TODO: add draw function for the shader and add a variable to hold the number of triangles
 
     public:
@@ -24,7 +24,7 @@ class Entity
         
         Model model;
 
-        Entity(std::string path, glm::mat4 projection, glm::vec3 location = glm::vec3(0.f,0.f,0.f), glm::vec3 scale = glm::vec3(1.f,1.f,1.f));
+        Entity(std::string path, glm::mat4 projection,  glm::vec3 scale = glm::vec3(1.f,1.f,1.f), glm::vec3 location = glm::vec3(0.f,0.f,0.f));
 
         const glm::mat4& getEntityMat() const { return modelMatrix; }
 

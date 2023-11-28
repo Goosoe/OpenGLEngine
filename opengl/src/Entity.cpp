@@ -1,10 +1,10 @@
 #include "Entity.h"
 
-Entity::Entity(std::string path, glm::mat4 projection, glm::vec3 location, glm::vec3 scale) : 
+Entity::Entity(std::string path, glm::mat4 projection, glm::vec3 scale, glm::vec3 location) : 
     projectionMatrix(projection),
     modelMatrix(glm::mat4(1.f)),
-    location(location),
     scale(scale),
+    location(location),
     model(path)
 { 
     recalculateModelMatrix();
