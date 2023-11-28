@@ -22,8 +22,8 @@ Camera camera(glm::vec3(1, 1, 5));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-const float ambientLight = 0.8f;
-const float specularVal = 0.5;
+constexpr float ambientLight = 0.8f;
+constexpr float specularVal = 0.5;
 
 //bool firstMouse = true;
 

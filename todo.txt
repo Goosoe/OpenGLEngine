@@ -3,5 +3,4 @@ Refactor model loading
 improve pipeline of making models/shaders
 Refactor program.cpp
 
-Entity has Model & Shader 
-Model has Mesh
+Model right now is being stored independently on every entity, even the ones that are the same. Instead of this, make a vector of Models and get VAO
