@@ -41,7 +41,7 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::draw(Shader& shader)
+void Mesh::draw(GLuint shaderId)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -56,7 +56,7 @@ void Mesh::draw(Shader& shader)
         else if(name == "texture_specular")
             number = std::to_string(specularNr++);
 
-        shader.setInt(("material." + name + number).c_str(), i);
+        Shader::setInt(shaderId, ("material." + name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);
@@ -67,12 +67,24 @@ void Mesh::draw(Shader& shader)
     glBindVertexArray(0);
 }
 
-////MODEL
-void Model::draw(Shader &shader)
+void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location)
 {
-    for(unsigned int i = 0; i < meshes.size(); i++)
+    entities.emplace_back(shaderId, projection, scale, location);
+}
+
+////MODEL
+void Model::drawEntities(glm::mat4& view)
+{
+    for(size_t i = 0; i < entities.size(); i++)
     {
-        meshes[i].draw(shader);
+        GLuint currentShaderId = entities[i].shaderProgram; 
+        glUseProgram(currentShaderId);
+        for(unsigned int j = 0; j < meshes.size(); j++)
+        {
+            meshes[j].draw(currentShaderId);
+        }
+        entities[i].updateCameraUniforms(view);
+        glUseProgram(0);
     }
 }
 
@@ -210,12 +222,12 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType 
         }
         if(!skip)
         {   // if texture hasn't been loaded already, load it
-            texturesLoaded.emplace_back(
-                    Texture{
+            texturesLoaded.emplace_back(Texture{
                     textureFromFile(str.C_Str(), directory),
                     typeName,
                     str.C_Str()
-                    }); // add to loaded textures
+                    }
+                    ); // add to loaded textures
         }
     }
     return textures;
@@ -265,37 +277,3 @@ unsigned int textureFromFile(const char *path, const std::string &directory, boo
 
     return textureID;
 }
-
-//void loadTexture(const GLenum textureUnit, const std::string path)
-//{
-//    stbi_set_flip_vertically_on_load(true);  
-//    // texture load
-//    unsigned int texture;
-//    int width, height, nrChannels;
-//    
-//    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-//
-//    glGenTextures(1, &texture);
-//    glActiveTexture(textureUnit);
-//    glBindTexture(GL_TEXTURE_2D, texture);  
-//
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//    if (!data)
-//    {
-//        std::cout << "Failed to load texture" << std::endl;
-//    }
-//
-//    GLuint colorVal = GL_RGB;
-//    //if its a png file extension
-//    if(path.find(".png") != std::string::npos){
-//        colorVal = GL_RGBA;
-//    }
-//
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, colorVal, GL_UNSIGNED_BYTE, data);
-//    glGenerateMipmap(GL_TEXTURE_2D);
-//    stbi_image_free(data);
-//}

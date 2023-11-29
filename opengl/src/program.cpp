@@ -9,6 +9,7 @@
 #include "glm/ext/vector_float4.hpp"
 #include "utils/Camera.h"
 #include "utils/window.h"
+#include "utils/Model.h"
 #include "utils/Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,18 +23,22 @@ Camera camera(glm::vec3(1, 1, 5));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
-constexpr float ambientLight = 0.8f;
-constexpr float specularVal = 0.5;
+constexpr float ambientLight = .1f;
+constexpr float specularVal = 0.8f;
 
 //bool firstMouse = true;
 
 //Scene data
 const glm::vec3 lightColor (1.f, 1.f, 1.f);
-const glm::vec3 objColor (1.f, 1.f, 0.f);
-//const glm::vec3 objColor (0.8f, 0.3f, 0.3f);
+const glm::vec3 objColor (0.5f, 0.f, 0.f);
 
 //TODO: add resizable window feature
 glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
+
+//struct ExtraUniforms
+//{
+//    GLuint shaderProgram;
+//};
 
 void runProgram(GLFWwindow* window)
 {
@@ -55,21 +60,38 @@ void runProgram(GLFWwindow* window)
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float prevTime = (float) glfwGetTime();
-    Entity light("./opengl/models/teapot.stl", projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
-    light.shader.makeBasicShader("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
-    light.shader.activate();
-    light.shader.setVec3("color", lightColor);
-    light.shader.deactivate();
 
-    Entity teapot("./opengl/models/teapot.stl", projection, glm::vec3(0.3f, 0.3f, 0.3f));
-    teapot.shader.makeBasicShader("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-    teapot.shader.activate();
-    teapot.shader.setVec3("lightColor", lightColor);
-    teapot.shader.setFloat("specularVal", specularVal);
-    teapot.shader.setFloat("ambient", ambientLight);
-    teapot.shader.setVec3("lightPos", lightPos);
-    teapot.shader.setVec3("objColor", objColor);
-    teapot.shader.deactivate();
+
+    //setup data vectors
+    std::vector<Model> models;
+    //for normal shaders that do not emit light
+    std::vector<Shader> shaders;
+    //for shaders that emit light
+    std::vector<Shader> illuminationShaders;
+    {
+        illuminationShaders.emplace_back("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
+        GLuint lightShader = illuminationShaders.back().get();
+        glUseProgram(lightShader);
+        Shader::setVec3(lightShader, "color", lightColor);
+        glUseProgram(0);
+
+        shaders.emplace_back("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+        GLuint basicShader = shaders.back().get();
+        glUseProgram(basicShader);
+        Shader::setVec3(basicShader, "lightPos", lightPos);
+        Shader::setVec3(basicShader, "lightColor", lightColor);
+        Shader::setVec3(basicShader, "objColor", objColor);
+        Shader::setFloat(basicShader, "ambientVal", ambientLight);
+        Shader::setFloat(basicShader, "specularVal", specularVal);
+        glUseProgram(0);
+
+        models.emplace_back("./opengl/models/teapot.stl");
+        Model& teapot = models[models.size() - 1];
+        
+        teapot.addEntity(basicShader, projection, glm::vec3(0.3f, 0.3f, 0.3f));
+
+        teapot.addEntity(lightShader, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
+    }
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -81,30 +103,16 @@ void runProgram(GLFWwindow* window)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw your scene here
-        
+
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        //SHADER MUST BE ACTIVE BEFORE SETTING UNIFORMS
-        light.shader.activate();
-
-        light.draw();
-        light.updateCameraUniforms(view);
-
-        light.shader.deactivate();
-
-
-        teapot.shader.activate();
-
-    //    teapot.shader.setVec3("lightPos", lightPos);
-
-        teapot.draw();
-        teapot.updateCameraUniforms(view);
-        teapot.shader.setVec3("cameraPos", camera.Position);
-
-        teapot.shader.deactivate();
-        //SHADER DISABLE
-
+        updateUniformsOfShaders(shaders);
+        
+        for(size_t i = 0; i < models.size(); i++)
+        { 
+            models[i].drawEntities(view);
+        }
         prevTime = currTime;
         
         // Handle other events
@@ -114,9 +122,6 @@ void runProgram(GLFWwindow* window)
         // Flip buffers
         glfwSwapBuffers(window);
     }
-
-    //lightModel.shader.deactivate();
-    //objModel.shader.deactivate();
 }
 
 
@@ -168,4 +173,15 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastY = ypos;
 
     camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void updateUniformsOfShaders(const std::vector<Shader>& shaders)
+{
+    for(size_t i = 0; i < shaders.size(); i++)
+    { 
+        GLuint program = shaders[i].program; 
+        glUseProgram(program);
+        Shader::setVec3(program, "cameraPos", camera.Position);
+        glUseProgram(0);
+    }
 }

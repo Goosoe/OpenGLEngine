@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <string>
+#include <vector>
 
 
 // Main OpenGL program
@@ -16,6 +17,11 @@ void handleKeyboardInput(GLFWwindow* window, float deltaTime);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
+
+/**
+ * iterates over shader vector and updates their common uniforms every frame
+ */
+void updateUniformsOfShaders(const std::vector<class Shader>& shaders);
 
 // Checks for whether an OpenGL error occurred. If one did,
 // it prints out the error type and ID

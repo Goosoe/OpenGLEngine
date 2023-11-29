@@ -4,3 +4,4 @@ improve pipeline of making models/shaders
 Refactor program.cpp
 
 Model right now is being stored independently on every entity, even the ones that are the same. Instead of this, make a vector of Models and get VAO
+// update view matrix with updated camera data

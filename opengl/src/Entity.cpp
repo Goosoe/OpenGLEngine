@@ -1,11 +1,11 @@
 #include "Entity.h"
 
-Entity::Entity(std::string path, glm::mat4 projection, glm::vec3 scale, glm::vec3 location) : 
+Entity::Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale, glm::vec3 location) : 
     projectionMatrix(projection),
     modelMatrix(glm::mat4(1.f)),
     scale(scale),
     location(location),
-    model(path)
+    shaderProgram(shaderProgram)
 { 
     recalculateModelMatrix();
 }
@@ -29,17 +29,12 @@ void Entity::setProjection(glm::mat4& projection)
 
 void Entity::updateCameraUniforms(glm::mat4& view)
 {
-    shader.setCameraUniforms(modelMatrix, view, projectionMatrix);
+    Shader::setCameraUniforms(shaderProgram, modelMatrix, view, projectionMatrix);
 }
 
 void Entity::updateCameraUniforms(glm::mat4& view, glm::mat4& projection)
 {
-    shader.setCameraUniforms(modelMatrix, view, projection);
-}
-
-void Entity::draw()
-{
-    model.draw(shader);
+    Shader::setCameraUniforms(shaderProgram, modelMatrix, view, projection);
 }
 
 void Entity::recalculateModelMatrix()

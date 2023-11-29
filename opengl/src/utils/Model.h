@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <vector>
+#include "Entity.h"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "Shader.h"
@@ -45,7 +46,7 @@ class Mesh {
 
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
-        void draw(Shader &shader);
+        void draw(GLuint shaderProgram);
     private:
         //  render data
         unsigned int VAO, VBO, EBO;
@@ -64,7 +65,11 @@ class Model
 
         std::string directory;
 
-      //  Shader 
+        //Entities to render that use this model data
+        std::vector<Entity> entities;
+        
+        // in the future if we want to hide entities from rendering
+        //std::vector<Entity> hiddenEntities;
 
     public:
         Model(std::string path)
@@ -72,7 +77,10 @@ class Model
             loadModel(path);
         }
 
-        void draw(Shader &shader);	
+        //todo: add entity with move semantics
+        void addEntity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f), glm::vec3 location = glm::vec3(0.f));
+
+        void drawEntities(glm::mat4& view);
     private:
 
         void loadModel(std::string path);
