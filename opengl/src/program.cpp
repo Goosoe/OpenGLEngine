@@ -17,7 +17,7 @@
 #include <iostream>
 #include <math.h>
 
-//TODO: make this in a better place
+//TODO: put this in a better place
 // settings
 Camera camera(glm::vec3(1, 1, 5));
 float lastX = SCR_WIDTH / 2.0f;
@@ -26,19 +26,14 @@ float lastY = SCR_HEIGHT / 2.0f;
 constexpr float ambientLight = .1f;
 constexpr float specularVal = 0.8f;
 
-//bool firstMouse = true;
 
 //Scene data
 const glm::vec3 lightColor (1.f, 1.f, 1.f);
 const glm::vec3 objColor (0.5f, 0.f, 0.f);
+const glm::vec3 testObjColor (0.5f, 0.5f, 0.f);
 
 //TODO: add resizable window feature
 glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
-
-//struct ExtraUniforms
-//{
-//    GLuint shaderProgram;
-//};
 
 void runProgram(GLFWwindow* window)
 {
@@ -68,20 +63,24 @@ void runProgram(GLFWwindow* window)
     std::vector<ShaderData> shaders;
     //for shaders that emit light
     std::vector<ShaderData> illuminationShaders;
+
     {
+        //lightShader
         ShaderData lightShader;
         lightShader.program = Shader::createProgram();
         Shader::makeBasicShader(lightShader, "./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
-        illuminationShaders.emplace_back(lightShader);
+
         glUseProgram(lightShader.program);
         Shader::setVec3(lightShader.program, "color", lightColor);
         glUseProgram(0);
 
+        illuminationShaders.emplace_back(lightShader);
+
+        //basic shader
         ShaderData basicShader;
         basicShader.program = Shader::createProgram();
         Shader::makeBasicShader(basicShader, "./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-        shaders.emplace_back(basicShader);
-        //GLuint basicShader = shaders.back().program;
+
         glUseProgram(basicShader.program);
         Shader::setVec3(basicShader.program, "lightPos", lightPos);
         Shader::setVec3(basicShader.program, "lightColor", lightColor);
@@ -90,10 +89,31 @@ void runProgram(GLFWwindow* window)
         Shader::setFloat(basicShader.program, "specularVal", specularVal);
         glUseProgram(0);
 
+        shaders.emplace_back(basicShader);
+
+        //extra testing shader to test if system is working properly. Since it uses the same shader, we could have a simple function
+        //that changed the uniforms for the values we wanted. Quicker and cheaper solution
+        ShaderData testShader;
+        testShader.program = Shader::createProgram();
+        Shader::makeBasicShader(testShader, "./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+
+        glUseProgram(testShader.program);
+        Shader::setVec3(testShader.program, "lightPos", lightPos);
+        Shader::setVec3(testShader.program, "lightColor", lightColor);
+        Shader::setVec3(testShader.program, "objColor", testObjColor);
+        Shader::setFloat(testShader.program, "ambientVal", ambientLight);
+        Shader::setFloat(testShader.program, "specularVal", specularVal);
+        glUseProgram(0);
+
+        shaders.emplace_back(basicShader);
+        //====
+
         models.emplace_back("./opengl/models/teapot.stl");
-        Model& teapot = models[models.size() - 1];
+        Model& teapot = models.back();
         
         teapot.addEntity(basicShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f));
+
+        teapot.addEntity(testShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f, 0.f, 0.f));
 
         teapot.addEntity(lightShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
     }
@@ -129,7 +149,6 @@ void runProgram(GLFWwindow* window)
     }
 }
 
-
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -163,13 +182,6 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
-
-   // if (firstMouse)
-   // {
-   //     lastX = xpos;
-   //     lastY = ypos;
-   //     firstMouse = false;
-   // }
 
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top

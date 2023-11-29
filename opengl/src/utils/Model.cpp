@@ -186,25 +186,21 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     // normal: texture_normalN
 
     // 1. diffuse maps
-    std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    loadMaterialTextures(textures, material, aiTextureType_DIFFUSE, "texture_diffuse");
     // 2. specular maps
-    std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    loadMaterialTextures(textures, material, aiTextureType_SPECULAR, "texture_specular");
     // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+    loadMaterialTextures(textures, material, aiTextureType_HEIGHT, "texture_normal");
     // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    loadMaterialTextures(textures, material, aiTextureType_AMBIENT, "texture_height");
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
+void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial *mat, aiTextureType type, std::string typeName)
 {
-    std::vector<Texture> textures;
+    //std::vector<Texture> textures;
     for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString str;
@@ -230,7 +226,6 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType 
                     ); // add to loaded textures
         }
     }
-    return textures;
 }  
 
 unsigned int textureFromFile(const char *path, const std::string &directory, bool gamma)

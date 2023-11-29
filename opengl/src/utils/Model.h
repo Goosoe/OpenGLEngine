@@ -53,7 +53,6 @@ class Mesh {
         void setupMesh();
 };  
 
-
 class Model 
 {
     private:
@@ -88,7 +87,7 @@ class Model
 
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);
 
-        std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, 
+        void loadMaterialTextures(std::vector<Texture>& textures, aiMaterial *mat, aiTextureType type, 
                 std::string typeName);
 };
 
@@ -96,9 +95,3 @@ class Model
  * Loads a texture from path and retuns the textureID
  */
 unsigned int textureFromFile(const char *path, const std::string &directory, bool gamma = false);
-
-/**
- * Loads a texture from path to the selected textureUnit.
- * It checks if it s a jpeg or png and does the necessary modifications
- */
-//void loadTexture(const GLenum textureUnit, const std::string path);
