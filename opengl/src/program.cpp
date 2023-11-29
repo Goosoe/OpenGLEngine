@@ -65,32 +65,37 @@ void runProgram(GLFWwindow* window)
     //setup data vectors
     std::vector<Model> models;
     //for normal shaders that do not emit light
-    std::vector<Shader> shaders;
+    std::vector<ShaderData> shaders;
     //for shaders that emit light
-    std::vector<Shader> illuminationShaders;
+    std::vector<ShaderData> illuminationShaders;
     {
-        illuminationShaders.emplace_back("./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
-        GLuint lightShader = illuminationShaders.back().get();
-        glUseProgram(lightShader);
-        Shader::setVec3(lightShader, "color", lightColor);
+        ShaderData lightShader;
+        lightShader.program = Shader::createProgram();
+        Shader::makeBasicShader(lightShader, "./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
+        illuminationShaders.emplace_back(lightShader);
+        glUseProgram(lightShader.program);
+        Shader::setVec3(lightShader.program, "color", lightColor);
         glUseProgram(0);
 
-        shaders.emplace_back("./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
-        GLuint basicShader = shaders.back().get();
-        glUseProgram(basicShader);
-        Shader::setVec3(basicShader, "lightPos", lightPos);
-        Shader::setVec3(basicShader, "lightColor", lightColor);
-        Shader::setVec3(basicShader, "objColor", objColor);
-        Shader::setFloat(basicShader, "ambientVal", ambientLight);
-        Shader::setFloat(basicShader, "specularVal", specularVal);
+        ShaderData basicShader;
+        basicShader.program = Shader::createProgram();
+        Shader::makeBasicShader(basicShader, "./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+        shaders.emplace_back(basicShader);
+        //GLuint basicShader = shaders.back().program;
+        glUseProgram(basicShader.program);
+        Shader::setVec3(basicShader.program, "lightPos", lightPos);
+        Shader::setVec3(basicShader.program, "lightColor", lightColor);
+        Shader::setVec3(basicShader.program, "objColor", objColor);
+        Shader::setFloat(basicShader.program, "ambientVal", ambientLight);
+        Shader::setFloat(basicShader.program, "specularVal", specularVal);
         glUseProgram(0);
 
         models.emplace_back("./opengl/models/teapot.stl");
         Model& teapot = models[models.size() - 1];
         
-        teapot.addEntity(basicShader, projection, glm::vec3(0.3f, 0.3f, 0.3f));
+        teapot.addEntity(basicShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f));
 
-        teapot.addEntity(lightShader, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
+        teapot.addEntity(lightShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
     }
 
     // Rendering Loop
@@ -175,7 +180,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-void updateUniformsOfShaders(const std::vector<Shader>& shaders)
+void updateUniformsOfShaders(const std::vector<ShaderData>& shaders)
 {
     for(size_t i = 0; i < shaders.size(); i++)
     { 

@@ -21,7 +21,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 /**
  * iterates over shader vector and updates their common uniforms every frame
  */
-void updateUniformsOfShaders(const std::vector<class Shader>& shaders);
+void updateUniformsOfShaders(const std::vector<class ShaderData>& shaders);
 
 // Checks for whether an OpenGL error occurred. If one did,
 // it prints out the error type and ID
