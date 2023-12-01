@@ -48,16 +48,20 @@ include_directories (opengl/src/
 # Add files
 #
 file (GLOB         LIB_SOURCES opengl/lib/glad/src/glad.c)
+
 file (GLOB_RECURSE PROJECT_HEADERS opengl/src/*.hpp
                                    opengl/src/*.h)
+
 file (GLOB_RECURSE PROJECT_SOURCES opengl/src/*.cpp
                                    opengl/src/*.cxx
                                    opengl/src/*.cc
                                    opengl/src/*.c)
+
 file (GLOB_RECURSE PROJECT_SHADERS opengl/shaders/*.comp
                                    opengl/shaders/*.frag
                                    opengl/shaders/*.geom
                                    opengl/shaders/*.vert)
+
 file (GLOB         PROJECT_CONFIGS CMakeLists.txt
                                    README.rst
                                   .gitignore
