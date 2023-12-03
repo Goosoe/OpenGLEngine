@@ -1,5 +1,5 @@
 // Local headers
-#include "program.h"
+#include "Teapot.h"
 #include "GLFW/glfw3.h"
 #include "Entity.h"
 #include "glm/detail/qualifier.hpp"
@@ -35,7 +35,7 @@ const glm::vec3 testObjColor (0.5f, 0.5f, 0.f);
 //TODO: add resizable window feature
 glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
 
-void runProgram(GLFWwindow* window)
+void runTeapotLevel(GLFWwindow* window)
 {
     // GL settings
     glEnable(GL_DEPTH_TEST);

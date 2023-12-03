@@ -1,6 +1,6 @@
 // Local headers
 #include "utils/window.h"
-#include "program.h"
+#include "levels/Teapot.h"
 
 // System headers
 #include <glad/glad.h>
@@ -72,8 +72,8 @@ int main()
     // Initialise window using GLFW
     GLFWwindow* window = initialise();
 
-    // Run an OpenGL application using this window
-    runProgram(window);
+    // run 
+    runTeapotLevel(window);
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
     glfwTerminate();

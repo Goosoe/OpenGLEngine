@@ -1,1 +1,4 @@
-replace assim with https://github.com/tinyobjloader/tinyobjloader
+replace assimp with https://github.com/tinyobjloader/tinyobjloader
+
+Create a terrain demo using a plane mesh and optimization
+

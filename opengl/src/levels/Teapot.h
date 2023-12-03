@@ -9,7 +9,7 @@
 
 
 // Main OpenGL program
-void runProgram(GLFWwindow* window);
+void runTeapotLevel(GLFWwindow* window);
 
 // Function for handling keypresses
 void handleKeyboardInput(GLFWwindow* window, float deltaTime);
