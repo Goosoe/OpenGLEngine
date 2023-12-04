@@ -17,23 +17,7 @@
 #include <iostream>
 #include <math.h>
 
-//TODO: put this in a better place
-// settings
-Camera camera(glm::vec3(1, 1, 5));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
 
-constexpr float ambientLight = .1f;
-constexpr float specularVal = 0.8f;
-
-
-//Scene data
-const glm::vec3 lightColor (1.f, 1.f, 1.f);
-const glm::vec3 objColor (0.5f, 0.f, 0.f);
-const glm::vec3 testObjColor (0.5f, 0.5f, 0.f);
-
-//TODO: add resizable window feature
-glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
 
 void runTeapotLevel(GLFWwindow* window)
 {
@@ -45,7 +29,24 @@ void runTeapotLevel(GLFWwindow* window)
     // default clearing colour 
     glClearColor(0.3f, 0.5f, 0.8f, 1.0f);
 
-    // camera
+    //required variables/ consts
+
+    Camera camera(glm::vec3(1, 1, 5));
+
+    constexpr float ambientLight = .1f;
+    constexpr float specularVal = 0.8f;
+
+    //Scene data
+    const glm::vec3 lightColor (1.f, 1.f, 1.f);
+    const glm::vec3 objColor (0.5f, 0.f, 0.f);
+    const glm::vec3 testObjColor (0.5f, 0.5f, 0.f);
+
+    //TODO: add resizable window feature
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
+
+    // setup window data
+    setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
+
     glm::mat4 view(1.f);
     const glm::vec3 lightPos (2.f);
 
@@ -55,7 +56,6 @@ void runTeapotLevel(GLFWwindow* window)
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float prevTime = (float) glfwGetTime();
-
 
     //setup data vectors
     std::vector<Model> models;
@@ -132,7 +132,7 @@ void runTeapotLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        updateUniformsOfShaders(shaders);
+        updateUniformsOfShaders(shaders, camera);
         
         for(size_t i = 0; i < models.size(); i++)
         { 
@@ -149,50 +149,7 @@ void runTeapotLevel(GLFWwindow* window)
     }
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-void handleKeyboardInput(GLFWwindow* window, float deltaTime)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera_Movement::UP, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.ProcessKeyboard(Camera_Movement::DOWN, deltaTime);
-    // Use escape key for terminating the GLFW window
-}
-
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-void updateUniformsOfShaders(const std::vector<ShaderData>& shaders)
+void updateUniformsOfShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
 {
     for(size_t i = 0; i < shaders.size(); i++)
     { 

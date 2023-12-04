@@ -16,7 +16,6 @@ static void glfwErrorCallback(int error, const char *description)
     fprintf(stderr, "GLFW returned an error:\n\t%s (%i)\n", description, error);
 }
 
-
 GLFWwindow* initialise()
 {
     // Initialise GLFW
