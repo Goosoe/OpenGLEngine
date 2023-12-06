@@ -1,5 +1,5 @@
-#include "window.h"
-#include "utils/Camera.h"
+#include "Commons.h"
+#include "Camera.h"
 
 Camera* cam;
 float lastX;

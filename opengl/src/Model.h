@@ -5,11 +5,14 @@
 #include "Entity.h"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float2.hpp"
-
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
+/**
+ *  Assimp loaded models will be converted to a Model.
+ *  Each Model holds information of the entities in the scene/level
+ */
 
 struct Vertex {
     // position

@@ -7,10 +7,10 @@
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float4.hpp"
-#include "utils/Camera.h"
-#include "utils/window.h"
-#include "utils/Model.h"
-#include "utils/Shader.h"
+#include "Camera.h"
+#include "Commons.h"
+#include "Model.h"
+#include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

@@ -1,6 +1,6 @@
 #pragma once
 #include "glm/ext/vector_float3.hpp"
-#include "utils/Shader.h"
+#include "Shader.h"
 
 /**
  * Responsible to hold data for basic entities. Has functions for the shader too

@@ -1,5 +1,5 @@
 // Local headers
-#include "utils/window.h"
+#include "Commons.h"
 #include "levels/Teapot.h"
 
 // System headers
@@ -40,7 +40,7 @@ GLFWwindow* initialise()
     // Create window using GLFW
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH,
                                           SCR_HEIGHT,
-                                          WIND_TITLE.c_str(),
+                                          WIND_TITLE,
                                           nullptr,
                                           nullptr);
 
