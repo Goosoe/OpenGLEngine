@@ -1,6 +1,7 @@
 // Local headers
 #include "Commons.h"
 #include "levels/Teapot.h"
+#include "levels/Terrain.h"
 
 // System headers
 #include <glad/glad.h>
@@ -65,14 +66,14 @@ GLFWwindow* initialise()
     return window;
 }
 
-
 int main()
 {
     // Initialise window using GLFW
     GLFWwindow* window = initialise();
 
     // run 
-    runTeapotLevel(window);
+    //runTeapotLevel(window);
+    runTerrainLevel(window);
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
     glfwTerminate();

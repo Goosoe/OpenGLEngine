@@ -11,6 +11,7 @@
 
 /**
  * Has functions and data structures relevant to interacting with shaders.
+ * The responsibility to set the active shader is up to the user.
  */
 
 struct ShaderData
@@ -56,9 +57,17 @@ namespace Shader
         /* Used for debugging shader programs (expensive to run) */
         bool isValid(ShaderData& shaderData);
 
-        void setCameraUniforms(GLuint shaderProgram, glm::mat4& model, glm::mat4& view, glm::mat4& projection);
+        //Sets the model uniform and updates the normal matrix uniform
+        void setModelUniform(GLuint shaderProgram, glm::mat4& model);
 
-        /* Helper function for creating shaders */
+        void setViewUniform(GLuint shaderProgram, glm::mat4& view);
+
+        void setProjectionUniform(GLuint shaderProgram, glm::mat4& projection);
+
+        // Sets Model, View and Projection Uniform
+        void setMVPUniforms(GLuint shaderProgram, glm::mat4& model, glm::mat4& view, glm::mat4& projection);
+
+        /* Helper function for setting shader uniforms */
         // ------------------------------------------------------------------------
         void setBool(GLuint shaderProgram, const std::string &name, bool value);
 

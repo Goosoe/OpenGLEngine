@@ -1,4 +1,9 @@
 replace assimp with https://github.com/tinyobjloader/tinyobjloader
 
 Create a terrain demo using a plane mesh and optimization
+Add level switch on main.cpp
+Add functions to dispose of shaders and other stored data on level switches 
+Update entity normals when rotating it. This comes in question: does each entity store its own normals list? or do we calculate 
 
+
+Model must have the original normals or place in memory where the shader fetches it and a list of processed normals for each entity rotation value?

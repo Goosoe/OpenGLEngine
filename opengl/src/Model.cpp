@@ -67,9 +67,9 @@ void Mesh::draw(GLuint shaderId)
     glBindVertexArray(0);
 }
 
-void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location)
+void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation)
 {
-    entities.emplace_back(shaderId, projection, scale, location);
+    entities.emplace_back(shaderId, projection, scale, location, rotation);
 }
 
 ////MODEL
@@ -79,11 +79,11 @@ void Model::drawEntities(glm::mat4& view)
     {
         GLuint currentShaderId = entities[i].shaderProgram; 
         glUseProgram(currentShaderId);
+        entities[i].setViewUniform(view);
         for(unsigned int j = 0; j < meshes.size(); j++)
         {
             meshes[j].draw(currentShaderId);
         }
-        entities[i].updateCameraUniforms(view);
         glUseProgram(0);
     }
 }
@@ -101,6 +101,16 @@ void Model::loadModel(std::string path)
     directory = path.substr(0, path.find_last_of('/'));
 
     processNode(scene->mRootNode, scene);
+}
+
+void Model::unloadData()
+{
+    for(size_t i = 0; i < meshes.size(); i++)
+    {
+        glDeleteVertexArrays(1, &meshes[i].VAO);
+        glDeleteBuffers(1, &meshes[i].VBO);
+        glDeleteBuffers(1, &meshes[i].EBO);
+    }
 }
 
 void Model::processNode(aiNode *node, const aiScene *scene)

@@ -2,8 +2,14 @@
 #include "glm/ext/vector_float3.hpp"
 #include "Shader.h"
 
+struct RotationData
+{
+    float angle;
+    glm::vec3 rotationAxis;
+};
+
 /**
- * Responsible to hold data for basic entities. Has functions for the shader too
+ * Entity present in a scene. Has functions to interact with one specifically
  */
 class Entity
 {
@@ -12,8 +18,12 @@ class Entity
         glm::mat4 projectionMatrix;
         // model matrix
         glm::mat4 modelMatrix;
+        // normal matrix - in case we need it, it is here
+        //glm::mat3 normalMatrix;
         // scale of the object on the scene
         glm::vec3 scale;
+        // rotation of the object on the scene
+        RotationData rotationData;
         //location of the entity on the scene
         glm::vec3 location;
 
@@ -22,7 +32,11 @@ class Entity
         //stores the shader program Id it will use
         GLuint shaderProgram;
 
-        Entity(GLuint shaderProgram, glm::mat4 projection,  glm::vec3 scale = glm::vec3(1.f,1.f,1.f), glm::vec3 location = glm::vec3(0.f,0.f,0.f));
+        // TODO: do we want to have the auto shader activation here? The rest of the functions don't do that
+        // Activates shader program, calculates necessary data and sets the values to the shaders
+        // The rest of the setters are unprotected and requires the user to activate the shader for himself
+        Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f,1.f,1.f), 
+                glm::vec3 location = glm::vec3(0.f,0.f,0.f), RotationData = {0.f, glm::vec3(1.f)});
 
         const glm::mat4& getEntityMat() const { return modelMatrix; }
 
@@ -30,24 +44,24 @@ class Entity
 
         void setScale(glm::vec3& scale);
 
+        void setRotation(RotationData& rotation);
+
         void setProjection(glm::mat4& projection);
         
         /**
-         *  Updates the camera uniforms in the attached shader. Uses its own model matrix and 
-         *  set projection matrix
+         *  Updates the view uniform in the attached shader. 
          */
-        void updateCameraUniforms(glm::mat4& view);
+        void setViewUniform(glm::mat4& view);
 
         /**
-         *  Updates the camera uniforms in the attached shader. Uses its own model matrix
+         *  Updates the projection uniform in the attached shader. 
          */
-        void updateCameraUniforms(glm::mat4& view, glm::mat4& projection);
+        void setProjectionUniform(glm::mat4& projection);
 
         //TODO: make these values to be stored in entity - IMPLEMENT THIS AGAIN?
         void updateLightingUniforms(glm::vec3& ambient, glm::vec3& diffuse, glm::vec3& specular);
         
 
     private:
-        inline void recalculateModelMatrix();
-
+        void recalculateModelMatrix();
 };

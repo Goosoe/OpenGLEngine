@@ -14,10 +14,23 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <math.h>
 
 
+
+/**
+ * iterates over shader vector and updates their common uniforms every frame
+ */
+void updateUniformsOfShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
+{
+    for(size_t i = 0; i < shaders.size(); i++)
+    { 
+        GLuint program = shaders[i].program; 
+        glUseProgram(program);
+        Shader::setVec3(program, "cameraPos", camera.Position);
+        glUseProgram(0);
+    }
+}
 
 void runTeapotLevel(GLFWwindow* window)
 {
@@ -60,7 +73,7 @@ void runTeapotLevel(GLFWwindow* window)
     //setup data vectors
     std::vector<Model> models;
     //for normal shaders that do not emit light
-    std::vector<ShaderData> shaders;
+    std::vector<::ShaderData> shaders;
     //for shaders that emit light
     std::vector<ShaderData> illuminationShaders;
 
@@ -147,15 +160,9 @@ void runTeapotLevel(GLFWwindow* window)
         // Flip buffers
         glfwSwapBuffers(window);
     }
-}
-
-void updateUniformsOfShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
-{
-    for(size_t i = 0; i < shaders.size(); i++)
+        
+    for(size_t i = 0; i < models.size(); i++)
     { 
-        GLuint program = shaders[i].program; 
-        glUseProgram(program);
-        Shader::setVec3(program, "cameraPos", camera.Position);
-        glUseProgram(0);
+        models[i].unloadData();
     }
 }

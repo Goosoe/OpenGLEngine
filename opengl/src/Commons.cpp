@@ -1,9 +1,22 @@
 #include "Commons.h"
 #include "Camera.h"
+#include <array>
+
+/**
+ * Key values for the keys that must store data about the previous type of input.
+ * Used as index access to previousKeyValues
+ */
+enum KeyValues {
+    Z = 0,
+    TOTAL
+};
 
 Camera* cam;
-float lastX;
-float lastY; 
+float lastX = SCR_WIDTH / 2.f;
+float lastY = SCR_HEIGHT / 2.f; 
+bool wireframeMode = false;
+
+std::array<uint8_t, TOTAL> previousKeyValues {GLFW_RELEASE};
 
 void setupWindowData(Camera* camera, float xVal, float yVal)
 {
@@ -22,22 +35,47 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void handleKeyboardInput(GLFWwindow* window, float deltaTime)
 {
+    // Use escape key for terminating the GLFW window
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    /** MOVEMENT **/
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cam->ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         cam->ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cam->ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cam->ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         cam->ProcessKeyboard(Camera_Movement::UP, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         cam->ProcessKeyboard(Camera_Movement::DOWN, deltaTime);
-    // Use escape key for terminating the GLFW window
+
+    /** CHANGE SETTINGS **/
+
+    uint8_t keyVal = glfwGetKey(window, GLFW_KEY_Z); 
+    //Wireframe toggle
+    if (keyVal == GLFW_RELEASE && previousKeyValues[Z] == GLFW_PRESS)
+    {
+        wireframeMode = !wireframeMode;
+        if(wireframeMode)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+    }
+    previousKeyValues[Z] = keyVal;
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)

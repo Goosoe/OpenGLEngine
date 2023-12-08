@@ -46,12 +46,13 @@ class Mesh {
         std::vector<unsigned int> indices;
         std::vector<Texture>      textures;
 
+        //  render data
+        unsigned int VAO, VBO, EBO;
+
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
         void draw(GLuint shaderProgram);
     private:
-        //  render data
-        unsigned int VAO, VBO, EBO;
 
         void setupMesh();
 };  
@@ -79,9 +80,16 @@ class Model
         }
 
         //todo: add entity with move semantics
-        void addEntity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f), glm::vec3 location = glm::vec3(0.f));
+        void addEntity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f),
+                 glm::vec3 location = glm::vec3(0.f), RotationData rotationData = {0.f, glm::vec3(1.f)});
 
         void drawEntities(glm::mat4& view);
+
+        /**
+         * Call this to unload any allocated shader Buffers.
+         * Recommended use on level/scene change
+         */
+        void unloadData();
     private:
 
         void loadModel(std::string path);

@@ -26,5 +26,6 @@ void main()
     vec3 specular = specularVal * spec * lightColor;
 
     vec3 color = ((ambientVal * lightColor) + diffuse + specular) * objColor;
+    //vec3 color = normal * 0.5 + 0.5;
     fragColor = vec4(color, 1.f);
 }

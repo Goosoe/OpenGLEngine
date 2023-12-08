@@ -1,13 +1,24 @@
 #include "Entity.h"
+#include <iostream>
 
-Entity::Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale, glm::vec3 location) : 
+Entity::Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation) : 
     projectionMatrix(projection),
     modelMatrix(glm::mat4(1.f)),
     scale(scale),
+    rotationData(rotation),
     location(location),
     shaderProgram(shaderProgram)
 { 
-    recalculateModelMatrix();
+    glUseProgram(shaderProgram);
+    Shader::setProjectionUniform(shaderProgram, projectionMatrix);
+    modelMatrix = glm::mat4(1.f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationData.angle), rotationData.rotationAxis);
+    modelMatrix = glm::translate(modelMatrix, location);
+    modelMatrix = glm::scale(modelMatrix, scale);
+    //normalMatrix = transpose(inverse(glm::mat3(modelMatrix)));
+    Shader::setModelUniform(shaderProgram, modelMatrix);
+    //Shader::setNormalMatrix(shaderProgram, normalMatrix);
+    glUseProgram(0);
 }
 
 void Entity::setLocation(glm::vec3& location)
@@ -22,24 +33,29 @@ void Entity::setScale(glm::vec3& scale)
     recalculateModelMatrix();
 }
 
-void Entity::setProjection(glm::mat4& projection)
+void Entity::setRotation(RotationData& rotation)
 {
-    this->projectionMatrix = projection;   
+    this->rotationData = rotation;
+    recalculateModelMatrix();
 }
 
-void Entity::updateCameraUniforms(glm::mat4& view)
+void Entity::setViewUniform(glm::mat4& view)
 {
-    Shader::setCameraUniforms(shaderProgram, modelMatrix, view, projectionMatrix);
+    Shader::setViewUniform(shaderProgram, view);
 }
 
-void Entity::updateCameraUniforms(glm::mat4& view, glm::mat4& projection)
+void Entity::setProjectionUniform(glm::mat4& projection)
 {
-    Shader::setCameraUniforms(shaderProgram, modelMatrix, view, projection);
+    Shader::setProjectionUniform(shaderProgram, projection);
 }
 
 void Entity::recalculateModelMatrix()
 {
     modelMatrix = glm::mat4(1.f);
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationData.angle), rotationData.rotationAxis);
     modelMatrix = glm::translate(modelMatrix, location);
     modelMatrix = glm::scale(modelMatrix, scale);
+    //normalMatrix = transpose(inverse(glm::mat3(modelMatrix)));
+    Shader::setModelUniform(shaderProgram, modelMatrix);
+    //Shader::setNormalMatrix(shaderProgram, normalMatrix);
 }
