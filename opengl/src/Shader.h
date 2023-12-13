@@ -57,7 +57,7 @@ namespace Shader
         /* Used for debugging shader programs (expensive to run) */
         bool isValid(ShaderData& shaderData);
 
-        //Sets the model uniform and updates the normal matrix uniform
+        //Sets the model uniform and updates and sets the normal matrix uniform
         void setModelUniform(GLuint shaderProgram, glm::mat4& model);
 
         void setViewUniform(GLuint shaderProgram, glm::mat4& view);
