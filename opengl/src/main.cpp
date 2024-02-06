@@ -71,8 +71,8 @@ int main()
     // Initialise window using GLFW
     GLFWwindow* window = initialise();
 
-    // run 
-    //runTeapotLevel(window);
+    // TODO: make level loader and unloader
+    // runTeapotLevel(window);
     runTerrainLevel(window);
 
     // Terminate GLFW (no need to call glfwDestroyWindow)

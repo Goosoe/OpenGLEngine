@@ -1,5 +1,5 @@
 #include "Entity.h"
-#include <iostream>
+#include "glm/ext/matrix_transform.hpp"
 
 Entity::Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation) : 
     projectionMatrix(projection),

@@ -1,20 +1,17 @@
 #include "Terrain.h"
 #include "GLFW/glfw3.h"
 #include "Entity.h"
-#include "glm/detail/qualifier.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/vector_float4.hpp"
 #include "Camera.h"
 #include "Commons.h"
-#include "Model.h"
+#include "modelLoader/Model.h"
 #include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <math.h>
+#include "mesh/TerrainModel.h"
 
 
 //TODO: This function is repeated 
@@ -46,12 +43,12 @@ void runTerrainLevel(GLFWwindow* window)
 
     Camera camera(glm::vec3(1, 1, 5));
 
-    constexpr float ambientLight = .1f;
+    constexpr float ambientLight = 1.f;
     constexpr float specularVal = 0.8f;
 
     //Scene data
     const glm::vec3 lightColor (1.f, 1.f, 1.f);
-    const glm::vec3 objColor (0.5f, 0.f, 0.f);
+    const glm::vec3 objColor (1.f, 1.f, 1.f);
 
     //TODO: add resizable window feature
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
@@ -60,6 +57,11 @@ void runTerrainLevel(GLFWwindow* window)
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
+    glm::mat4 modelMatrix = glm::mat4(1.f);
+    //modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationData.angle), rotationData.rotationAxis);
+    //modelMatrix = glm::translate(modelMatrix, location);
+    //modelMatrix = glm::scale(modelMatrix, scale);
+    //normalMatrix = transpose(inverse(glm::mat3(modelMatrix)));
     const glm::vec3 lightPos (2.f);
 
     //TODO: set framebuffersize
@@ -70,23 +72,23 @@ void runTerrainLevel(GLFWwindow* window)
     float prevTime = (float) glfwGetTime();
 
     //setup data vectors
-    std::vector<Model> models;
+    // std::vector<ModelLoader::Model> models;
     //for normal shaders that do not emit light
-    std::vector<::ShaderData> shaders;
+    std::vector<ShaderData> shaders;
     //for shaders that emit light
-    std::vector<ShaderData> illuminationShaders;
+    // std::vector<ShaderData> illuminationShaders;
 
     {
         //lightShader
-        ShaderData lightShader;
-        lightShader.program = Shader::createProgram();
-        Shader::makeBasicShader(lightShader, "./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
+        // ShaderData lightShader;
+        // lightShader.program = Shader::createProgram();
+        // Shader::makeBasicShader(lightShader, "./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
 
-        glUseProgram(lightShader.program);
-        Shader::setVec3(lightShader.program, "color", lightColor);
-        glUseProgram(0);
+        // glUseProgram(lightShader.program);
+        // Shader::setVec3(lightShader.program, "color", lightColor);
+        // glUseProgram(0);
 
-        illuminationShaders.emplace_back(lightShader);
+        // illuminationShaders.emplace_back(lightShader);
 
         //basic shader
         ShaderData basicShader;
@@ -103,18 +105,19 @@ void runTerrainLevel(GLFWwindow* window)
 
         shaders.emplace_back(basicShader);
         //====
+        }
 
-        models.emplace_back("./opengl/models/teapot.stl");
-        Model& teapot = models.back();
+        //models.emplace_back("./opengl/models/teapot.stl");
+        Terrain::TerrainModel mesh = Terrain::TerrainModel(5, 5);
+        // Model& teapot = models.back();
         
-        teapot.addEntity(lightShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
+        // teapot.addEntity(lightShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
 
-       models.emplace_back("./opengl/models/grid.stl");
-       Model& plane = models.back();
+       //models.emplace_back("./opengl/models/grid.stl");
+       // Model& plane = models.back();
        
        //plane.addEntity(basicShader.program, projection, glm::vec3(1.f), glm::vec3(0.f));
-       plane.addEntity(basicShader.program, projection, glm::vec3(1.f), glm::vec3(0.f), RotationData{90, glm::vec3(-1.f, 0.0f, 0.f)});
-    }
+       // plane.addEntity(basicShader.program, projection, glm::vec3(1.f), glm::vec3(0.f), RotationData{90, glm::vec3(-1.f, 0.0f, 0.f)});
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -132,10 +135,12 @@ void runTerrainLevel(GLFWwindow* window)
 
         updateUniformsOfTerrainShaders(shaders, camera);
         
-        for(size_t i = 0; i < models.size(); i++)
-        { 
-            models[i].drawEntities(view);
-        }
+        glUseProgram(shaders[0].program);
+        Shader::setViewUniform(shaders[0].program, view);
+        Shader::setProjectionUniform(shaders[0].program, projection);
+        Shader::setModelUniform(shaders[0].program, modelMatrix);
+        mesh.draw();
+        glUseProgram(0);
         prevTime = currTime;
         
         // Handle other events

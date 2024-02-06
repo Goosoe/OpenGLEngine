@@ -1,10 +1,17 @@
 #include "Model.h"
 
 #include <iostream>
+#include "assimp/postprocess.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+/**
+ * Structs and classes used when using assimp
+ */
+namespace ModelLoader
+{
+/** MESH **/
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) :
     vertices(vertices),
     indices(indices),
@@ -29,13 +36,13 @@ void Mesh::setupMesh()
             &indices[0], GL_STATIC_DRAW);
 
     // vertex positions
-    glEnableVertexAttribArray(0);	
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     // vertex normals
-    glEnableVertexAttribArray(1);	
+    glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     // vertex texture coords
-    glEnableVertexAttribArray(2);	
+    glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 
     glBindVertexArray(0);
@@ -67,16 +74,17 @@ void Mesh::draw(GLuint shaderId)
     glBindVertexArray(0);
 }
 
+/** MODEL **/
 void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation)
 {
     entities.emplace_back(shaderId, projection, scale, location, rotation);
 }
 
-////MODEL
 void Model::drawEntities(glm::mat4& view)
 {
     for(size_t i = 0; i < entities.size(); i++)
     {
+        //todo: this is inneficient. using a program and deactivating it every loop
         GLuint currentShaderId = entities[i].shaderProgram; 
         glUseProgram(currentShaderId);
         entities[i].setViewUniform(view);
@@ -281,4 +289,5 @@ unsigned int textureFromFile(const char *path, const std::string &directory, boo
     stbi_image_free(data);
 
     return textureID;
+}
 }

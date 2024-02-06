@@ -5,9 +5,9 @@
 
 // Standard headers
 #include <string>
+#include <unordered_map>
 
 #include "glm/ext/matrix_float4x4.hpp"
-#include "glm/gtc/type_ptr.hpp"
 
 /**
  * Has functions and data structures relevant to interacting with shaders.
@@ -16,9 +16,9 @@
 
 struct ShaderData
 {
-        GLuint program;
-        GLint  status = 0;
-        GLint  length = 0;
+    GLuint program;
+    GLint status = 0;
+    GLint length = 0;
 };
 
 namespace Shader

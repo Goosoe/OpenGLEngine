@@ -1,20 +1,16 @@
 // Local headers
 #include "Teapot.h"
 #include "GLFW/glfw3.h"
-#include "Entity.h"
-#include "glm/detail/qualifier.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/vector_float4.hpp"
 #include "Camera.h"
 #include "Commons.h"
-#include "Model.h"
+#include "modelLoader/Model.h"
 #include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <math.h>
 
 
 
@@ -71,7 +67,7 @@ void runTeapotLevel(GLFWwindow* window)
     float prevTime = (float) glfwGetTime();
 
     //setup data vectors
-    std::vector<Model> models;
+    std::vector<ModelLoader::Model> models;
     //for normal shaders that do not emit light
     std::vector<::ShaderData> shaders;
     //for shaders that emit light
@@ -122,7 +118,7 @@ void runTeapotLevel(GLFWwindow* window)
         //====
 
         models.emplace_back("./opengl/models/teapot.stl");
-        Model& teapot = models.back();
+        ModelLoader::Model& teapot = models.back();
         
         teapot.addEntity(basicShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f));
 

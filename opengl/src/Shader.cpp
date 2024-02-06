@@ -2,6 +2,7 @@
 #include <memory>
 #include <cassert>
 #include <fstream>
+#include "glm/gtc/type_ptr.hpp"
 
 namespace Shader
 {

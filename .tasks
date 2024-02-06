@@ -1,0 +1,18 @@
+# vim: set fenc=utf-8 ft=taskini:
+# see: https://github.com/skywind3000/asynctasks.vim/wiki/Task-Config
+
+[build]
+command=build.bat
+cwd=$(VIM_CWD)
+errorformat=%f(%l):\ %t%*[^\ ]\ %m,%f(%l\,%c):\ %t%*[^\ ]\ %m
+output=quickfix
+save=2
+
+[build-and-run]
+command=run.bat
+cwd=$(VIM_CWD)
+errorformat=%f(%l):\ %t%*[^\ ]\ %m,%f(%l\,%c):\ %t%*[^\ ]\ %m
+output=quickfix
+save=2
+
+
