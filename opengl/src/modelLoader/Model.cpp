@@ -7,7 +7,7 @@
 #include "stb_image.h"
 
 /**
- * Structs and classes used when using assimp
+ * Structs and classes used when using assimp to load data
  */
 namespace ModelLoader
 {

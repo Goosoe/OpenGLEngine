@@ -42,6 +42,7 @@ include_directories (opengl/src/
                      opengl/lib/glfw/include/
                      opengl/lib/assimp/include
                      opengl/lib/glm/
+                     opengl/lib/FastNoiseLite
                      opengl/lib/stb/)
 
 #

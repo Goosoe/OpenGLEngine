@@ -1,6 +1,5 @@
 #include "Terrain.h"
 #include "GLFW/glfw3.h"
-#include "Entity.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
@@ -18,19 +17,23 @@
 /**
  * iterates over shader vector and updates their common uniforms every frame
  */
-void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
-{
-    for(size_t i = 0; i < shaders.size(); i++)
-    { 
-        GLuint program = shaders[i].program; 
-        glUseProgram(program);
-        Shader::setVec3(program, "cameraPos", camera.Position);
-        glUseProgram(0);
-    }
-}
+//void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
+//{
+//    for(size_t i = 0; i < shaders.size(); i++)
+//    { 
+//        GLuint program = shaders[i].program; 
+//        glUseProgram(program);
+//        Shader::setVec3(program, "cameraPos", camera.Position);
+//        glUseProgram(0);
+//    }
+//}
 
 void runTerrainLevel(GLFWwindow* window)
 {
+    //Terrain settings
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 30;
+    constexpr int TERRAIN_LENGTH = 10;
+
     // GL settings
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -43,8 +46,8 @@ void runTerrainLevel(GLFWwindow* window)
 
     Camera camera(glm::vec3(1, 1, 5));
 
-    constexpr float ambientLight = 1.f;
-    constexpr float specularVal = 0.8f;
+    constexpr float ambientLight = 0.7f;
+    constexpr float specularVal = 0.2f;
 
     //Scene data
     const glm::vec3 lightColor (1.f, 1.f, 1.f);
@@ -71,25 +74,12 @@ void runTerrainLevel(GLFWwindow* window)
 
     float prevTime = (float) glfwGetTime();
 
-    //setup data vectors
-    // std::vector<ModelLoader::Model> models;
     //for normal shaders that do not emit light
-    std::vector<ShaderData> shaders;
+    //std::vector<ShaderData> shaders;
     //for shaders that emit light
     // std::vector<ShaderData> illuminationShaders;
 
-    {
-        //lightShader
-        // ShaderData lightShader;
-        // lightShader.program = Shader::createProgram();
-        // Shader::makeBasicShader(lightShader, "./opengl/shaders/LightV.glsl", "./opengl/shaders/LightF.glsl");
-
-        // glUseProgram(lightShader.program);
-        // Shader::setVec3(lightShader.program, "color", lightColor);
-        // glUseProgram(0);
-
-        // illuminationShaders.emplace_back(lightShader);
-
+    //{
         //basic shader
         ShaderData basicShader;
         basicShader.program = Shader::createProgram();
@@ -103,21 +93,11 @@ void runTerrainLevel(GLFWwindow* window)
         Shader::setFloat(basicShader.program, "specularVal", specularVal);
         glUseProgram(0);
 
-        shaders.emplace_back(basicShader);
+        //shaders.emplace_back(basicShader);
         //====
-        }
-
-        //models.emplace_back("./opengl/models/teapot.stl");
-        Terrain::TerrainModel mesh = Terrain::TerrainModel(5, 5);
-        // Model& teapot = models.back();
-        
-        // teapot.addEntity(lightShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f));
-
-       //models.emplace_back("./opengl/models/grid.stl");
-       // Model& plane = models.back();
-       
-       //plane.addEntity(basicShader.program, projection, glm::vec3(1.f), glm::vec3(0.f));
-       // plane.addEntity(basicShader.program, projection, glm::vec3(1.f), glm::vec3(0.f), RotationData{90, glm::vec3(-1.f, 0.0f, 0.f)});
+    //}
+    //Length, subdivisions per side
+    Terrain::TerrainModel terrain(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE);
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -133,13 +113,14 @@ void runTerrainLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        updateUniformsOfTerrainShaders(shaders, camera);
-        
-        glUseProgram(shaders[0].program);
-        Shader::setViewUniform(shaders[0].program, view);
-        Shader::setProjectionUniform(shaders[0].program, projection);
-        Shader::setModelUniform(shaders[0].program, modelMatrix);
-        mesh.draw();
+        // updateUniformsOfTerrainShaders(shaders, camera);
+        glUseProgram(basicShader.program);
+        Shader::setMVPUniforms(basicShader.program, modelMatrix, view, projection);
+        Shader::setVec3(basicShader.program, "cameraPos", camera.Position);
+        // Shader::setViewUniform(basicShader.program, view);
+        // Shader::setProjectionUniform(basicShader.program, projection);
+        // Shader::setModelUniform(basicShader.program, modelMatrix);
+        terrain.draw();
         glUseProgram(0);
         prevTime = currTime;
         
