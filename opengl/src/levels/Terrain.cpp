@@ -19,21 +19,23 @@
 //
 #define assertm(exp, msg) assert(((void)msg, exp))
 
-//TODO: This function is repeated 
 /**
- * iterates over shader vector and updates their common uniforms every frame
+ * iterates over shader vector and updates their common uniforms
  */
-//void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
-//{
-//    for(size_t i = 0; i < shaders.size(); i++)
-//    { 
-//        GLuint program = shaders[i].program; 
-//        glUseProgram(program);
-//        Shader::setVec3(program, "cameraPos", camera.Position);
-//        glUseProgram(0);
-//    }
-//}
+void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
+{
+   for(size_t i = 0; i < shaders.size(); i++)
+   { 
+       GLuint program = shaders[i].program; 
+       glUseProgram(program);
+       Shader::setVec3(program, "cameraPos", camera.Position);
+       glUseProgram(0);
+   }
+}
 
+/**
+* Procedurally generates a mesh with the given parameters
+*/
 void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>& vertices, std::vector<GLuint>& indices)
 {
     assert(length > 0 && "Length must be > 0");
@@ -45,7 +47,6 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     // vertices - 3 coords, 3 normals, 2 texpoints
     // TODO: normals and texture coods properly
-    // Maybe make a data struct for each type of data we want to calculate and in the end, combine them all together in an array/vector
 
     for(int y = 0; y <= divPerSide; y++)
     {
@@ -56,9 +57,6 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
                                       noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER),
                                       polygonLength * y);
             vertices.emplace_back(ModelLoader::Vertex{pos, glm::vec3(0.f), glm::vec2(0.f), glm::vec3(0.f), glm::vec3(0.f)});
-            // vertices.emplace_back(polygonLength * x); // / length); //x
-            // vertices.emplace_back(noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER));  //y
-            // vertices.emplace_back(polygonLength * y); // / length);  //z
             //normals
         //    vboData.emplace_back(0.f);
         //    vboData.emplace_back(0.f);
@@ -89,7 +87,6 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
     {
         glm::vec3 v1 = vertices[indices[i]].position - vertices[indices[i + 1]].position;
         glm::vec3 v2 = vertices[indices[i]].position - vertices[indices[i + 2]].position;
-        //now we have face normals!
         glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
         vertices[indices[i]].normal = normal;
         vertices[indices[i + 1]].normal = normal;
@@ -129,11 +126,6 @@ void runTerrainLevel(GLFWwindow* window)
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
-    glm::mat4 modelMatrix = glm::mat4(1.f);
-    //modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationData.angle), rotationData.rotationAxis);
-    //modelMatrix = glm::translate(modelMatrix, location);
-    //modelMatrix = glm::scale(modelMatrix, scale);
-    //normalMatrix = transpose(inverse(glm::mat3(modelMatrix)));
     const glm::vec3 lightPos (5.f);
 
     //TODO: set framebuffersize
@@ -143,12 +135,14 @@ void runTerrainLevel(GLFWwindow* window)
 
     float prevTime = (float) glfwGetTime();
 
+    //setup data vectors
+    std::vector<ModelLoader::Model> models;
     //for normal shaders that do not emit light
-    //std::vector<ShaderData> shaders;
+    std::vector<ShaderData> shaders;
     //for shaders that emit light
     // std::vector<ShaderData> illuminationShaders;
 
-    //{
+    {
         //basic shader
         ShaderData basicShader;
         basicShader.program = Shader::createProgram();
@@ -160,19 +154,20 @@ void runTerrainLevel(GLFWwindow* window)
         Shader::setVec3(basicShader.program, "objColor", objColor);
         Shader::setFloat(basicShader.program, "ambientVal", ambientLight);
         Shader::setFloat(basicShader.program, "specularVal", specularVal);
-        Shader::setMVPUniforms(basicShader.program, modelMatrix, view, projection);
+        //Shader::setMVPUniforms(basicShader.program, modelMatrix, view, projection);
         glUseProgram(0);
 
-        //shaders.emplace_back(basicShader);
+        shaders.emplace_back(basicShader);
         //====
-    //}
-    //Length, subdivisions per side
-    //Terrain::TerrainModel terrain(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE);
-    std::vector<ModelLoader::Vertex> vertices;
-    std::vector<GLuint> indices;
+        std::vector<ModelLoader::Vertex> vertices;
+        std::vector<GLuint> indices;
+        generateMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
+        ModelLoader::Model terrain;
+        terrain.meshes.emplace_back(vertices, indices, std::vector<ModelLoader::Texture>());
+        terrain.addEntity(basicShader.program, projection);
+        models.emplace_back(terrain);
 
-    generateMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
-    ModelLoader::Mesh mesh(vertices, indices, std::vector<ModelLoader::Texture>());
+    }
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -188,16 +183,11 @@ void runTerrainLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        // updateUniformsOfTerrainShaders(shaders, camera);
-        glUseProgram(basicShader.program);
-        Shader::setViewUniform(basicShader.program, view);
-        Shader::setVec3(basicShader.program, "cameraPos", camera.Position);
-        // Shader::setViewUniform(basicShader.program, view);
-        // Shader::setProjectionUniform(basicShader.program, projection);
-        // Shader::setModelUniform(basicShader.program, modelMatrix);
-        // terrain.draw();
-        mesh.draw(basicShader.program);
-        glUseProgram(0);
+        updateUniformsOfTerrainShaders(shaders, camera);
+        for(size_t i = 0; i < models.size(); i++)
+        { 
+            models[i].drawEntities(view);
+        }
         prevTime = currTime;
         
         // Handle other events

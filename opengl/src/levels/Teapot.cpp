@@ -15,7 +15,7 @@
 
 
 /**
- * iterates over shader vector and updates their common uniforms every frame
+ * iterates over shader vector and updates their common uniforms
  */
 void updateUniformsOfShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
 {
@@ -73,6 +73,7 @@ void runTeapotLevel(GLFWwindow* window)
     //for shaders that emit light
     std::vector<ShaderData> illuminationShaders;
 
+    //setting up shaders, models and entities of said models
     {
         //lightShader
         ShaderData lightShader;
@@ -119,7 +120,7 @@ void runTeapotLevel(GLFWwindow* window)
 
         models.emplace_back("./opengl/models/teapot.stl");
         ModelLoader::Model& teapot = models.back();
-        
+
         teapot.addEntity(basicShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f));
 
         teapot.addEntity(testShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f), glm::vec3(2.f, 0.f, 0.f));
@@ -142,13 +143,14 @@ void runTeapotLevel(GLFWwindow* window)
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
         updateUniformsOfShaders(shaders, camera);
-        
+
+        //draws all the entities of all models
         for(size_t i = 0; i < models.size(); i++)
-        { 
+        {
             models[i].drawEntities(view);
         }
+
         prevTime = currTime;
-        
         // Handle other events
         glfwPollEvents();
         handleKeyboardInput(window, deltaTime);
@@ -156,9 +158,10 @@ void runTeapotLevel(GLFWwindow* window)
         // Flip buffers
         glfwSwapBuffers(window);
     }
-        
+
+    //doing it for when we want to change levels
     for(size_t i = 0; i < models.size(); i++)
-    { 
+    {
         models[i].unloadData();
     }
 }

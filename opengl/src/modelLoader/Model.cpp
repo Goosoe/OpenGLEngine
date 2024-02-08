@@ -75,6 +75,10 @@ void Mesh::draw(GLuint shaderId)
 }
 
 /** MODEL **/
+Model::Model()
+{
+}
+
 void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation)
 {
     entities.emplace_back(shaderId, projection, scale, location, rotation);

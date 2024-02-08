@@ -62,7 +62,7 @@ private:
  */
 class Model 
 {
-private:
+public:
     // model data
     std::vector<Mesh> meshes;
 
@@ -76,24 +76,29 @@ private:
     // in the future if we want to hide entities from rendering
     //std::vector<Entity> hiddenEntities;
 
-public:
+    //empty builder for creating our own models objects
+    Model();
+
     Model(std::string path)
     {
         loadModel(path);
     }
-    //todo: make model constructor with Mesh as in parameter
 
     //todo: add entity with move semantics
     void addEntity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f),
                    glm::vec3 location = glm::vec3(0.f), RotationData rotationData = {0.f, glm::vec3(1.f)});
 
+    /** A model will hold information about all the entities regarding itself are on the scene
+     * Use this to draw all entities registered
+     */
     void drawEntities(glm::mat4& view);
 
     /**
-         * Call this to unload any allocated shader Buffers.
-         * Recommended use on level/scene change
-         */
+     * Call this to unload any allocated shader Buffers.
+     * Recommended use on level/scene change
+     */
     void unloadData();
+
 private:
 
     void loadModel(std::string path);
