@@ -4,7 +4,8 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
 - Create a terrain demo using a plane mesh and optimization
     - [x] Make function for generating a mesh with arbitrary size
     - [x] Make mesh change height with noise
-    - [] Calculate normals for vertices to have better lighting
+    - [x] Calculate normals for vertices to have better shading
+    - [] Replace Vertex and Mesh created in Terrain Model. Just refactor it pls
     - [] Add texture + calculate texture coords
     - [] Make it bigger + Optimize it 
 

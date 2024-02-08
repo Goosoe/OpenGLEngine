@@ -14,7 +14,7 @@ namespace Terrain
 TerrainModel::TerrainModel(float length, int divPerSide)
 {
     generateMesh(length, divPerSide);
-    setupTerrain();
+    //setupTerrain();
 }
 
 void TerrainModel::setupTerrain()
@@ -26,7 +26,8 @@ void TerrainModel::setupTerrain()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glBufferData(GL_ARRAY_BUFFER, vboData.size() * sizeof(float), &vboData[0], GL_STATIC_DRAW);  
+    //todo: make a vector/array with vertices, normal, texturecoords
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(ModelLoader::Vertex), &vertices[0], GL_STATIC_DRAW);  
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), 
@@ -34,13 +35,14 @@ void TerrainModel::setupTerrain()
 
     // vertex positions
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    // vertex normals
-    // glEnableVertexAttribArray(1);
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(3 * sizeof(float)));
-    // // vertex texture coords
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ModelLoader::Vertex), (void*)0);
+    //vertex normals
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ModelLoader::Vertex), (void*)offsetof(ModelLoader::Vertex, normal));
+    // vertex texture coords
     // glEnableVertexAttribArray(2);
-    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(5 * sizeof(float)));
+    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+
     glBindVertexArray(0);
 }
 
@@ -64,14 +66,20 @@ void TerrainModel::generateMesh(float length, int divPerSide)
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     // vertices - 3 coords, 3 normals, 2 texpoints
     // TODO: normals and texture coods properly
+    // Maybe make a data struct for each type of data we want to calculate and in the end, combine them all together in an array/vector
+
     for(int y = 0; y <= divPerSide; y++)
     {
         for(int x = 0; x <= divPerSide; x++)
         {
             //coords
-            vboData.emplace_back(polygonLength * x); // / length); //x
-            vboData.emplace_back(noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER));  //y
-            vboData.emplace_back(polygonLength * y); // / length);  //z
+            glm::vec3 pos = glm::vec3(polygonLength * x,
+                                      noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER),
+                                      polygonLength * y);
+            vertices.emplace_back(ModelLoader::Vertex{pos, glm::vec3(0.f)});
+            // vertices.emplace_back(polygonLength * x); // / length); //x
+            // vertices.emplace_back(noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER));  //y
+            // vertices.emplace_back(polygonLength * y); // / length);  //z
             //normals
         //    vboData.emplace_back(0.f);
         //    vboData.emplace_back(0.f);
@@ -97,5 +105,16 @@ void TerrainModel::generateMesh(float length, int divPerSide)
             indices.emplace_back((divPerSide + 1) * y + divPerSide + x + 2);
         }
    }
+    // normals - always a multiple of 3
+    for(int i = 0; i < indices.size(); i += 3)
+    {
+        glm::vec3 v1 = vertices[indices[i]].position - vertices[indices[i + 1]].position;
+        glm::vec3 v2 = vertices[indices[i]].position - vertices[indices[i + 2]].position;
+        //now we have face normals!
+        glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
+        vertices[indices[i]].normal = normal;
+        vertices[indices[i + 1]].normal = normal;
+        vertices[indices[i + 2]].normal = normal;
+    }
 }
 };

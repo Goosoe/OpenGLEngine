@@ -31,7 +31,7 @@
 void runTerrainLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 30;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 20;
     constexpr int TERRAIN_LENGTH = 10;
 
     // GL settings
@@ -46,12 +46,12 @@ void runTerrainLevel(GLFWwindow* window)
 
     Camera camera(glm::vec3(1, 1, 5));
 
-    constexpr float ambientLight = 0.7f;
-    constexpr float specularVal = 0.2f;
+    constexpr float ambientLight = 0.4f;
+    constexpr float specularVal = 0.1f;
 
     //Scene data
     const glm::vec3 lightColor (1.f, 1.f, 1.f);
-    const glm::vec3 objColor (1.f, 1.f, 1.f);
+    const glm::vec3 objColor (0.f, 1.f, 0.f);
 
     //TODO: add resizable window feature
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
@@ -65,7 +65,7 @@ void runTerrainLevel(GLFWwindow* window)
     //modelMatrix = glm::translate(modelMatrix, location);
     //modelMatrix = glm::scale(modelMatrix, scale);
     //normalMatrix = transpose(inverse(glm::mat3(modelMatrix)));
-    const glm::vec3 lightPos (2.f);
+    const glm::vec3 lightPos (5.f);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -91,6 +91,7 @@ void runTerrainLevel(GLFWwindow* window)
         Shader::setVec3(basicShader.program, "objColor", objColor);
         Shader::setFloat(basicShader.program, "ambientVal", ambientLight);
         Shader::setFloat(basicShader.program, "specularVal", specularVal);
+        Shader::setMVPUniforms(basicShader.program, modelMatrix, view, projection);
         glUseProgram(0);
 
         //shaders.emplace_back(basicShader);
@@ -98,6 +99,7 @@ void runTerrainLevel(GLFWwindow* window)
     //}
     //Length, subdivisions per side
     Terrain::TerrainModel terrain(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE);
+    ModelLoader::Mesh mesh(terrain.vertices, terrain.indices, std::vector<ModelLoader::Texture>());
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -115,12 +117,13 @@ void runTerrainLevel(GLFWwindow* window)
 
         // updateUniformsOfTerrainShaders(shaders, camera);
         glUseProgram(basicShader.program);
-        Shader::setMVPUniforms(basicShader.program, modelMatrix, view, projection);
+        Shader::setViewUniform(basicShader.program, view);
         Shader::setVec3(basicShader.program, "cameraPos", camera.Position);
         // Shader::setViewUniform(basicShader.program, view);
         // Shader::setProjectionUniform(basicShader.program, projection);
         // Shader::setModelUniform(basicShader.program, modelMatrix);
-        terrain.draw();
+        // terrain.draw();
+        mesh.draw(basicShader.program);
         glUseProgram(0);
         prevTime = currTime;
         

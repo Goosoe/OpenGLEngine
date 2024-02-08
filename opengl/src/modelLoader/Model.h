@@ -44,13 +44,13 @@ class Mesh {
 public:
     // mesh data
     std::vector<Vertex>       vertices;
-    std::vector<unsigned int> indices;
+    std::vector<GLuint> indices;
     std::vector<Texture>      textures;
 
     //  render data
     unsigned int VAO, VBO, EBO;
 
-    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+    Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
     void draw(GLuint shaderProgram);
 private:

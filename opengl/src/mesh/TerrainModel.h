@@ -1,5 +1,7 @@
 #include <vector>
+#include "modelLoader/Model.h"
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 /**
 *   Class for holding all the Terrain model data and functions to modify it
@@ -8,13 +10,14 @@ namespace Terrain
 {
 class TerrainModel
 {
-private:
+public:
     //  render data
     unsigned int VAO, VBO, EBO;
-    std::vector<float> vboData;
+
+    std::vector<ModelLoader::Vertex> vertices;
+    //std::vector<glm::vec3> normals;
     std::vector<GLuint> indices;
 
-public:
     TerrainModel(float length, int divPerSide);
     void draw();
 
