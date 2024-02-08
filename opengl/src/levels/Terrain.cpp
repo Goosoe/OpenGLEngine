@@ -1,5 +1,7 @@
 #include "Terrain.h"
+#include "FastNoiseLite.h"
 #include "GLFW/glfw3.h"
+#include <glad/glad.h>
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
@@ -10,8 +12,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "mesh/TerrainModel.h"
+#include <cassert>
 
+// uncomment to disable assert()
+// #define NDEBUG
+//
+#define assertm(exp, msg) assert(((void)msg, exp))
 
 //TODO: This function is repeated 
 /**
@@ -28,11 +34,74 @@
 //    }
 //}
 
+void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>& vertices, std::vector<GLuint>& indices)
+{
+    assert(length > 0 && "Length must be > 0");
+    assert(divPerSide > 0 && " must be > 0");
+    const float polygonLength = length / divPerSide;
+    constexpr float MULTIPLIER = 5.f;
+
+    FastNoiseLite noise;
+    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    // vertices - 3 coords, 3 normals, 2 texpoints
+    // TODO: normals and texture coods properly
+    // Maybe make a data struct for each type of data we want to calculate and in the end, combine them all together in an array/vector
+
+    for(int y = 0; y <= divPerSide; y++)
+    {
+        for(int x = 0; x <= divPerSide; x++)
+        {
+            //coords
+            glm::vec3 pos = glm::vec3(polygonLength * x,
+                                      noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER),
+                                      polygonLength * y);
+            vertices.emplace_back(ModelLoader::Vertex{pos, glm::vec3(0.f), glm::vec2(0.f), glm::vec3(0.f), glm::vec3(0.f)});
+            // vertices.emplace_back(polygonLength * x); // / length); //x
+            // vertices.emplace_back(noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER));  //y
+            // vertices.emplace_back(polygonLength * y); // / length);  //z
+            //normals
+        //    vboData.emplace_back(0.f);
+        //    vboData.emplace_back(0.f);
+        //    vboData.emplace_back(1.f);
+        //    //textures
+        //    vboData.emplace_back(0.f);
+        //    vboData.emplace_back(0.f);
+        }
+    }
+
+    //indices
+    for(int y = 0; y < divPerSide; y++)
+    {
+        for(int x = 0; x < divPerSide; x++)
+        {
+            //verts
+            indices.emplace_back((divPerSide + 1) * y + x);
+            indices.emplace_back((divPerSide + 1) * y + divPerSide + x + 1);
+            indices.emplace_back((divPerSide + 1) * y + x + 1);
+
+            indices.emplace_back((divPerSide + 1) * y + x + 1);
+            indices.emplace_back((divPerSide + 1) * y + divPerSide + x + 1);
+            indices.emplace_back((divPerSide + 1) * y + divPerSide + x + 2);
+        }
+   }
+    // normals - always a multiple of 3
+    for(size_t i = 0; i < indices.size(); i += 3)
+    {
+        glm::vec3 v1 = vertices[indices[i]].position - vertices[indices[i + 1]].position;
+        glm::vec3 v2 = vertices[indices[i]].position - vertices[indices[i + 2]].position;
+        //now we have face normals!
+        glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
+        vertices[indices[i]].normal = normal;
+        vertices[indices[i + 1]].normal = normal;
+        vertices[indices[i + 2]].normal = normal;
+    }
+}
+
 void runTerrainLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 20;
-    constexpr int TERRAIN_LENGTH = 10;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 100;
+    constexpr int TERRAIN_LENGTH = 100;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -98,8 +167,12 @@ void runTerrainLevel(GLFWwindow* window)
         //====
     //}
     //Length, subdivisions per side
-    Terrain::TerrainModel terrain(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE);
-    ModelLoader::Mesh mesh(terrain.vertices, terrain.indices, std::vector<ModelLoader::Texture>());
+    //Terrain::TerrainModel terrain(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE);
+    std::vector<ModelLoader::Vertex> vertices;
+    std::vector<GLuint> indices;
+
+    generateMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
+    ModelLoader::Mesh mesh(vertices, indices, std::vector<ModelLoader::Texture>());
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
