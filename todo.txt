@@ -5,7 +5,8 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [x] Make function for generating a mesh with arbitrary size
     - [x] Make mesh change height with noise
     - [x] Calculate normals for vertices to have better shading
-    - [] Replace Vertex and Mesh created in Terrain Model. Just refactor it pls
+    - [x] Replace Vertex and Mesh created in Terrain Model. Just refactor it pls
+    - [x] Average normals with data from adjacent vertices, right now it's just replacing old normal with the most recently calculated one
     - [] Add texture + calculate texture coords
     - [] Make it bigger + Optimize it 
 

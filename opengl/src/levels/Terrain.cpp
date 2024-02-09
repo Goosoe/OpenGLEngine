@@ -82,15 +82,27 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
             indices.emplace_back((divPerSide + 1) * y + divPerSide + x + 2);
         }
    }
+    //used for averaging the normals calculated
+    std::vector<int> indicesRepeated(vertices.size(), 0);
     // normals - always a multiple of 3
     for(size_t i = 0; i < indices.size(); i += 3)
     {
         glm::vec3 v1 = vertices[indices[i]].position - vertices[indices[i + 1]].position;
         glm::vec3 v2 = vertices[indices[i]].position - vertices[indices[i + 2]].position;
-        glm::vec3 normal = glm::normalize(glm::cross(v1, v2));
-        vertices[indices[i]].normal = normal;
-        vertices[indices[i + 1]].normal = normal;
-        vertices[indices[i + 2]].normal = normal;
+        glm::vec3 normal = glm::cross(v1, v2);
+        //sum all the normals acting on a vertex
+        vertices[indices[i]].normal += normal;
+        vertices[indices[i + 1]].normal += normal;
+        vertices[indices[i + 2]].normal += normal;
+        //store how many times the vertex normal was summed
+        indicesRepeated[indices[i]]++;
+        indicesRepeated[indices[i + 1]]++;
+        indicesRepeated[indices[i + 2]]++;
+    }
+    //average the summed normals and normalize them 
+    for(size_t i = 0; i < vertices.size(); i++)
+    {
+        vertices[i].normal = glm::normalize(vertices[i].normal / glm::vec3(indicesRepeated[i]));
     }
 }
 
