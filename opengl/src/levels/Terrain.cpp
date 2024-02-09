@@ -41,29 +41,31 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
     const float polygonLength = length / divPerSide;
-    constexpr float MULTIPLIER = 5.f;
+    constexpr float NOISE_MULTIPLIER = 8.f;
+    constexpr float HEIGHT_MULTIPLIER = 1.5f;
+    constexpr float UV_MULTIPLIER = 3.f;
 
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     // vertices - 3 coords, 3 normals, 2 texpoints
     // TODO: normals and texture coods properly
 
+    const float uvCoord = length /divPerSide;
     for(int y = 0; y <= divPerSide; y++)
     {
         for(int x = 0; x <= divPerSide; x++)
         {
             //coords
             glm::vec3 pos = glm::vec3(polygonLength * x,
-                                      noise.GetNoise((float)x * MULTIPLIER, (float)y * MULTIPLIER),
+                                      noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER,
                                       polygonLength * y);
-            vertices.emplace_back(ModelLoader::Vertex{pos, glm::vec3(0.f), glm::vec2(0.f), glm::vec3(0.f), glm::vec3(0.f)});
-            //normals
-        //    vboData.emplace_back(0.f);
-        //    vboData.emplace_back(0.f);
-        //    vboData.emplace_back(1.f);
-        //    //textures
-        //    vboData.emplace_back(0.f);
-        //    vboData.emplace_back(0.f);
+            vertices.emplace_back(ModelLoader::Vertex{
+                pos, //position
+                glm::vec3(0.f), //normal
+                UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
+                glm::vec3(0.f),
+                glm::vec3(0.f)
+            });
         }
     }
 
@@ -177,7 +179,17 @@ void runTerrainLevel(GLFWwindow* window)
         ModelLoader::Model terrain;
         terrain.meshes.emplace_back(vertices, indices, std::vector<ModelLoader::Texture>());
         terrain.addEntity(basicShader.program, projection);
+        //TODO: load texture
+        ModelLoader::textureFromFile("grass.jpg", "./textures");
+        terrain.texturesLoaded.emplace_back(
+            ModelLoader::Texture{
+                ModelLoader::textureFromFile("grass.jpg", "./textures"),
+                "",
+                ""
+            }
+        );
         models.emplace_back(terrain);
+
 
     }
 
@@ -195,9 +207,12 @@ void runTerrainLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
+        //todo: remove this. This is for test reasons
+        //Shader::setFloat(shaders[0].program, "elapsedTime", currTime);
         updateUniformsOfTerrainShaders(shaders, camera);
         for(size_t i = 0; i < models.size(); i++)
         { 
+            //todo: texture is being put in mesh and is doing unnecessary bs (Models.cpp l.64)
             models[i].drawEntities(view);
         }
         prevTime = currTime;

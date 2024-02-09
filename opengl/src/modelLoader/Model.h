@@ -34,7 +34,7 @@ struct Vertex
 
 struct Texture
 {
-    unsigned int id;
+    GLuint id;
     std::string type;
     std::string path;
 };
@@ -47,7 +47,7 @@ public:
     std::vector<Texture>      textures;
 
     //  render data
-    unsigned int VAO, VBO, EBO;
+    GLuint VAO, VBO, EBO;
 
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
@@ -114,5 +114,5 @@ private:
 /**
  * Loads a texture from path and retuns the textureID
  */
-unsigned int textureFromFile(const char *path, const std::string &directory, bool gamma = false);
+unsigned int textureFromFile(const char *path, const std::string &directory);
 }

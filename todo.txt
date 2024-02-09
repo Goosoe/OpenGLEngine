@@ -9,6 +9,7 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [x] Average normals with data from adjacent vertices, right now it's just replacing old normal with the most recently calculated one
     - [] Add texture + calculate texture coords
     - [] Make it bigger + Optimize it 
+    - [] Make it infinite by repositioning the center of the mesh to the camera
 
 # General
 - Add level switch on main.cpp

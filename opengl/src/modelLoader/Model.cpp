@@ -62,7 +62,6 @@ void Mesh::draw(GLuint shaderId)
             number = std::to_string(diffuseNr++);
         else if(name == "texture_specular")
             number = std::to_string(specularNr++);
-
         Shader::setInt(shaderId, ("material." + name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
@@ -250,20 +249,20 @@ void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial *mat
     }
 }  
 
-unsigned int textureFromFile(const char *path, const std::string &directory, bool gamma)
+unsigned int textureFromFile(const char *filename, const std::string &directory)
 {
-    std::string filename = std::string(path);
-    filename = directory + '/' + filename;
+    std::string fullPath = std::string(filename);
+    fullPath = directory + '/' + filename;
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
 
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    unsigned char *data = stbi_load(fullPath.c_str(), &width, &height, &nrComponents, 0);
     if (!data)
     {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        std::cout << "Texture failed to load at path: " << fullPath << std::endl;
         stbi_image_free(data);
     }
 
