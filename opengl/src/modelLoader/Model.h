@@ -51,7 +51,10 @@ public:
 
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
+    //Draws loaded meshes
     void draw(GLuint shaderProgram);
+    //Draws handmade meshes 
+    void drawHandmade(GLuint shaderProgram);
 private:
 
     void setupMesh();
