@@ -7,7 +7,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "Camera.h"
 #include "Commons.h"
-#include "modelLoader/Model.h"
+#include "Model.h"
 #include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,25 +27,44 @@ constexpr float HEIGHT_MULTIPLIER = 2.f;
 constexpr float UV_MULTIPLIER = 1.f;
 
 /**
+ * Use this function to draw the custom built terrain model entity
+ */
+void drawTerrainEntity(GLuint shaderId, Mesh& mesh)
+{
+    for(unsigned int i = 0; i < mesh.textures.size(); i++)
+    {
+        // set proper texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i);
+        //bind/activate existing texture unit
+        glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
+        //assign uniforms of current shader to texture unit
+        Shader::setInt(shaderId, ("tex" + std::to_string(i)), i);
+    }
+    glActiveTexture(GL_TEXTURE0);
+
+    // draw mesh
+    glBindVertexArray(mesh.VAO);
+    glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
+
+/**
  * iterates over shader vector and updates their common uniforms
  */
-void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
+void updateTerrainShader(const ShaderData& shader, const Camera& camera)
 {
-    for(size_t i = 0; i < shaders.size(); i++)
-    { 
-        GLuint program = shaders[i].program; 
+        const GLuint program = shader.program;
         glUseProgram(program);
         Shader::setVec3(program, "cameraPos", camera.Position);
         //todo: the height multiplier is no longer valid with the current implementation
         Shader::setFloat(program, "heightMultiplier", HEIGHT_MULTIPLIER);
         glUseProgram(0);
-    }
 }
 
 /**
 * Procedurally generates a mesh with the given parameters
 */
-void generateMesh(const float length, const int divPerSide, std::vector<ModelLoader::Vertex>& vertices, std::vector<GLuint>& indices)
+void generateMesh(const float length, const int divPerSide, std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
 {
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
@@ -65,7 +84,7 @@ void generateMesh(const float length, const int divPerSide, std::vector<ModelLoa
                                       //(noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER) + (noise.GetNoise((float)x * PEAKS_MULTIPLIER, (float)y * PEAKS_MULTIPLIER)),
                                       (noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER) + (noise.GetNoise((float)x * PEAKS_MULTIPLIER, (float)y * PEAKS_MULTIPLIER)) + (noise.GetNoise((float)x * SUB_PEAKS_MULTIPLIER, (float)y * SUB_PEAKS_MULTIPLIER)) / 5 ,
                                       polygonLength * y);
-            vertices.emplace_back(ModelLoader::Vertex{
+            vertices.emplace_back(Vertex{
                 pos, //position
                 glm::vec3(0.f), //normal (to be set later)
                 UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
@@ -157,58 +176,51 @@ void runTerrainLevel(GLFWwindow* window)
     float prevTime = (float) glfwGetTime();
 
     //setup data vectors
-    // std::vector<ModelLoader::Model> models;
-    //for normal shaders that do not emit light
-    ModelLoader::Model terrain;
-    std::vector<ShaderData> shaders;
-    //for shaders that emit light
-    // std::vector<ShaderData> illuminationShaders;
+    // std::vector<Model> models;
+    Model terrain;
+    ShaderData terrainShader;
+    // std::vector<ShaderData> shaders;
 
+    //Sets the terrain model
     {
-        //terrain shader
-        ShaderData basicShader;
-        basicShader.program = Shader::createProgram();
-        Shader::makeBasicShader(basicShader, "./opengl/shaders/TerrainV.glsl", "./opengl/shaders/TerrainF.glsl");
+        terrainShader.program = Shader::createProgram();
+        Shader::makeBasicShader(terrainShader, "./opengl/shaders/TerrainV.glsl", "./opengl/shaders/TerrainF.glsl");
 
-        glUseProgram(basicShader.program);
-        Shader::setVec3(basicShader.program, "lightPos", lightPos);
-        Shader::setVec3(basicShader.program, "lightColor", lightColor);
-        Shader::setVec3(basicShader.program, "objColor", objColor);
-        Shader::setFloat(basicShader.program, "ambientVal", ambientLight);
-        Shader::setFloat(basicShader.program, "specularVal", specularVal);
-        //Shader::setMVPUniforms(basicShader.program, modelMatrix, view, projection);
+        glUseProgram(terrainShader.program);
+        Shader::setVec3(terrainShader.program, "lightPos", lightPos);
+        Shader::setVec3(terrainShader.program, "lightColor", lightColor);
+        Shader::setVec3(terrainShader.program, "objColor", objColor);
+        Shader::setFloat(terrainShader.program, "ambientVal", ambientLight);
+        Shader::setFloat(terrainShader.program, "specularVal", specularVal);
         glUseProgram(0);
 
-        shaders.emplace_back(basicShader);
         //====
-        std::vector<ModelLoader::Vertex> vertices;
+        std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
         generateMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
-        terrain.meshes.emplace_back(vertices, indices, std::vector<ModelLoader::Texture>());
-        terrain.addEntity(basicShader.program, projection);
+        terrain.meshes.emplace_back(vertices, indices, std::vector<Texture>());
+        terrain.addEntity(terrainShader.program, projection);
         terrain.meshes[0].textures.emplace_back(
-            ModelLoader::Texture{
-                ModelLoader::textureFromFile("grass.jpg", "./textures"),
+            Texture{
+                textureFromFile("grass.jpg", "./textures"),
                 "",
                 "",
             }
         );
         terrain.meshes[0].textures.emplace_back(
-            ModelLoader::Texture{
-                ModelLoader::textureFromFile("rock.jpg", "./textures"),
+            Texture{
+                textureFromFile("rock.jpg", "./textures"),
                 "",
                 ""
             }
         );
         terrain.meshes[0].textures.emplace_back(
-            ModelLoader::Texture{
-                ModelLoader::textureFromFile("snow.jpg", "./textures"),
+            Texture{
+                textureFromFile("snow.jpg", "./textures"),
                 "",
                 ""
             }
         );
-
-        //models.emplace_back(terrain);
     }
 
     // Rendering Loop
@@ -225,24 +237,9 @@ void runTerrainLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        //todo: remove this. This is for test reasons
-        //Shader::setFloat(shaders[0].program, "elapsedTime", currTime);
-        updateUniformsOfTerrainShaders(shaders, camera);
+        updateTerrainShader(terrainShader, camera);
+        terrain.drawEntities(view, &drawTerrainEntity);
 
-        glUseProgram(shaders[0].program);
-        Shader::setViewUniform(shaders[0].program, view);
-        for(unsigned int i = 0; i < terrain.meshes.size(); i++)
-        {
-            terrain.meshes[i].drawHandmade(shaders[0].program);
-        }
-        glUseProgram(0);
-
-        //use case when having loaded models
-       // for(size_t i = 0; i < models.size(); i++)
-       // { 
-       //     //todo: texture is being put in mesh and is doing unnecessary bs (Models.cpp l.64)
-       //     models[i].drawEntities(view);
-       // }
         prevTime = currTime;
         
         // Handle other events

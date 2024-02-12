@@ -6,7 +6,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "Camera.h"
 #include "Commons.h"
-#include "modelLoader/Model.h"
+#include "Model.h"
 #include "Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -67,7 +67,7 @@ void runTeapotLevel(GLFWwindow* window)
     float prevTime = (float) glfwGetTime();
 
     //setup data vectors
-    std::vector<ModelLoader::Model> models;
+    std::vector<Model> models;
     //for normal shaders that do not emit light
     std::vector<::ShaderData> shaders;
     //for shaders that emit light
@@ -119,7 +119,7 @@ void runTeapotLevel(GLFWwindow* window)
         //====
 
         models.emplace_back("./opengl/models/teapot.stl");
-        ModelLoader::Model& teapot = models.back();
+        Model& teapot = models.back();
 
         teapot.addEntity(basicShader.program, projection, glm::vec3(0.3f, 0.3f, 0.3f));
 

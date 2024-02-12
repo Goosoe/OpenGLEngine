@@ -9,8 +9,6 @@
 /**
  * Structs and classes used when using assimp to load data
  */
-namespace ModelLoader
-{
 /** MESH **/
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) :
     vertices(vertices),
@@ -48,28 +46,7 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::drawHandmade(GLuint shaderId)
-{
-    // unsigned int diffuseNr = 1;
-    // unsigned int specularNr = 1;
-    for(unsigned int i = 0; i < textures.size(); i++)
-    {
-        // set proper texture unit before binding
-        glActiveTexture(GL_TEXTURE0 + i); 
-        //bind/activate existing texture unit
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);   
-        //assign uniforms of current shader to texture unit
-        Shader::setInt(shaderId, ("tex" + std::to_string(i)), i);
-    }
-    glActiveTexture(GL_TEXTURE0);
-
-    // draw mesh
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-}
-
-void Mesh::draw(GLuint shaderId)
+void Mesh::drawLoaded(GLuint shaderId)
 {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -112,7 +89,23 @@ void Model::drawEntities(glm::mat4& view)
         entities[i].setViewUniform(view);
         for(unsigned int j = 0; j < meshes.size(); j++)
         {
-            meshes[j].draw(currentShaderId);
+            meshes[i].drawLoaded(currentShaderId);
+        }
+        glUseProgram(0);
+    }
+}
+
+void Model::drawEntities(glm::mat4& view, void (*drawFunc)(GLuint, Mesh&))
+{
+    for(size_t i = 0; i < entities.size(); i++)
+    {
+        //todo: this is inneficient. using a program and deactivating it every loop
+        GLuint currentShaderId = entities[i].shaderProgram; 
+        glUseProgram(currentShaderId);
+        entities[i].setViewUniform(view);
+        for(unsigned int j = 0; j < meshes.size(); j++)
+        {
+            drawFunc(currentShaderId, meshes[j]);
         }
         glUseProgram(0);
     }
@@ -311,5 +304,4 @@ unsigned int textureFromFile(const char *filename, const std::string &directory)
     stbi_image_free(data);
 
     return textureID;
-}
 }

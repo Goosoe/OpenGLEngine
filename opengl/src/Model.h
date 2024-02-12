@@ -1,4 +1,5 @@
 #include <GLFW/glfw3.h>
+#include <functional>
 #include <string>
 #include <vector>
 #include "Entity.h"
@@ -11,8 +12,6 @@
  *  Assimp loaded models will be converted to a Model.
  *  Each Model holds information of the entities in the scene/level
  */
-namespace ModelLoader
-{
 struct Vertex 
 {
     // position
@@ -52,16 +51,17 @@ public:
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
     //Draws loaded meshes
-    void draw(GLuint shaderProgram);
+    void drawLoaded(GLuint shaderProgram);
     //Draws handmade meshes 
-    void drawHandmade(GLuint shaderProgram);
+    //void drawHandmade(GLuint shaderProgram);
 private:
 
     void setupMesh();
 };  
 
 /**
- * Class for assimp loaded models
+ * A model will hold information about all the necessary data for it to be rendered in a scene. 
+ * It will also hold information regarding entities of itself that are present in the scene
  */
 class Model 
 {
@@ -91,10 +91,16 @@ public:
     void addEntity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f),
                    glm::vec3 location = glm::vec3(0.f), RotationData rotationData = {0.f, glm::vec3(1.f)});
 
-    /** A model will hold information about all the entities regarding itself are on the scene
-     * Use this to draw all entities registered
+    /**
+     * Use this to draw all entities registered using the drawLoaded function,
+     * which draws using the loaded model standard naming conventions
      */
     void drawEntities(glm::mat4& view);
+
+    /**
+     * Use this to draw all entities registered using a custom drawFunction
+     */
+    void drawEntities(glm::mat4& view, void (*drawFunc)(GLuint, Mesh& mesh));
 
     /**
      * Call this to unload any allocated shader Buffers.
@@ -118,4 +124,3 @@ private:
  * Loads a texture from path and retuns the textureID
  */
 unsigned int textureFromFile(const char *path, const std::string &directory);
-}

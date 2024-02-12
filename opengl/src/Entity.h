@@ -9,7 +9,7 @@ struct RotationData
 };
 
 /**
- * Entity present in a scene. Has functions to interact with one specifically
+ * Entity present in a scene. Holds data of a single entity
  */
 class Entity
 {
