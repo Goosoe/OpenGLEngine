@@ -19,6 +19,13 @@
 //
 #define assertm(exp, msg) assert(((void)msg, exp))
 
+constexpr float NOISE_MULTIPLIER = 2.f;
+constexpr float PEAKS_MULTIPLIER = 0.25f;
+constexpr float SUB_PEAKS_MULTIPLIER = 8.f;
+//todo: send this as uniform
+constexpr float HEIGHT_MULTIPLIER = 2.f;
+constexpr float UV_MULTIPLIER = 1.f;
+
 /**
  * iterates over shader vector and updates their common uniforms
  */
@@ -29,6 +36,7 @@ void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, cons
        GLuint program = shaders[i].program; 
        glUseProgram(program);
        Shader::setVec3(program, "cameraPos", camera.Position);
+       Shader::setFloat(program, "heightMultiplier", HEIGHT_MULTIPLIER);
        glUseProgram(0);
    }
 }
@@ -41,10 +49,6 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
     const float polygonLength = length / divPerSide;
-    constexpr float NOISE_MULTIPLIER = 2.f;
-    constexpr float PEAKS_MULTIPLIER = 1.f;
-    constexpr float HEIGHT_MULTIPLIER = 3.f;
-    constexpr float UV_MULTIPLIER = 3.f;
 
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
@@ -58,8 +62,9 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
         {
             //coords
             glm::vec3 pos = glm::vec3(polygonLength * x,
-                                      (noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER),
+                                      // (noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER),
                                       //(noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER) + (noise.GetNoise((float)x * PEAKS_MULTIPLIER, (float)y * PEAKS_MULTIPLIER)),
+                                      (noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER) + (noise.GetNoise((float)x * PEAKS_MULTIPLIER, (float)y * PEAKS_MULTIPLIER)) + (noise.GetNoise((float)x * SUB_PEAKS_MULTIPLIER, (float)y * SUB_PEAKS_MULTIPLIER)) / 5 ,
                                       polygonLength * y);
             vertices.emplace_back(ModelLoader::Vertex{
                 pos, //position
@@ -160,7 +165,7 @@ void runTerrainLevel(GLFWwindow* window)
     // std::vector<ShaderData> illuminationShaders;
 
     {
-        //basic shader
+        //terrain shader
         ShaderData basicShader;
         basicShader.program = Shader::createProgram();
         Shader::makeBasicShader(basicShader, "./opengl/shaders/TerrainV.glsl", "./opengl/shaders/TerrainF.glsl");

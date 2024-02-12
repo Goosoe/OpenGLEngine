@@ -55,8 +55,10 @@ void Mesh::drawHandmade(GLuint shaderId)
     for(unsigned int i = 0; i < textures.size(); i++)
     {
 
-        glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        // set proper texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i); 
+        //bind/activate existing texture unit
+        glBindTexture(GL_TEXTURE_2D, textures[i].id);   
         //assign uniforms of current shader to texture unit
         Shader::setInt(shaderId, ("tex" + std::to_string(i)), i);
     }
@@ -94,9 +96,7 @@ void Mesh::draw(GLuint shaderId)
 }
 
 /** MODEL **/
-Model::Model()
-{
-}
+Model::Model(){}
 
 void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation)
 {

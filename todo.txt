@@ -10,6 +10,7 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [x] Add texture + calculate texture coords
     - [] Make it bigger + Optimize it 
     - [] Make it infinite by repositioning the center of the mesh to the camera
+    - [] Research fractal brownian motion for better map creation
 
 # General
     - [] Add imgui to project
@@ -19,3 +20,4 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [] Model must have the original normals or place in memory where the shader fetches it and a list of processed normals for each entity rotation value?
     - [] Make model/entity functions for manually created meshes
     - [] Make entity draw() function work with both loaded model and handmade model/textures
+    - [] Hot reload shaders
