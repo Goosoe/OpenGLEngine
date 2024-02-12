@@ -11,6 +11,8 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [] Make it bigger + Optimize it 
     - [] Make it infinite by repositioning the center of the mesh to the camera
     - [] Research fractal brownian motion for better map creation
+    - [] Add moving sunlight that affects shader shadowing effects
+    - [] Refactor and clean code. ModelLoader namespace is handling manual mesh drawing which does not make sense. Either separate class/structs or make something specific for terrain level, idk
 
 # General
     - [] Add imgui to project

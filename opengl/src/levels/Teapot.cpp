@@ -61,7 +61,7 @@ void runTeapotLevel(GLFWwindow* window)
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, mouseCallbackAdjustCursor);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float prevTime = (float) glfwGetTime();

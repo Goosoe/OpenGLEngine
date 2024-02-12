@@ -24,6 +24,7 @@ void setupWindowData(Camera* camera, float xVal, float yVal)
     lastX = xVal;
     lastY = yVal;
 }
+//TODO: Make this camelcase
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -78,7 +79,28 @@ void handleKeyboardInput(GLFWwindow* window, float deltaTime)
     previousKeyValues[Z] = keyVal;
 }
 
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+/**
+* Adjusts the cursor to the center. It then sets the default mouse callback as a cursor callback.
+* Using this to avoid the if statement every callback.
+*/
+void mouseCallbackAdjustCursor(GLFWwindow* window, double xposIn, double yposIn)
+{
+    lastX = xposIn;
+    lastY = yposIn;
+    float xoffset = xposIn - lastX;
+    float yoffset = lastY - yposIn; 
+    lastX = xposIn;
+    lastY = yposIn;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    cam->ProcessMouseMovement(xoffset, yoffset);
+
+    glfwSetCursorPosCallback(window, defaultMouseCallback);
+}
+void defaultMouseCallback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);

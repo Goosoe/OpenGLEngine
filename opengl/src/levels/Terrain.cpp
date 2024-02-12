@@ -31,20 +31,21 @@ constexpr float UV_MULTIPLIER = 1.f;
  */
 void updateUniformsOfTerrainShaders(const std::vector<ShaderData>& shaders, const Camera& camera)
 {
-   for(size_t i = 0; i < shaders.size(); i++)
-   { 
-       GLuint program = shaders[i].program; 
-       glUseProgram(program);
-       Shader::setVec3(program, "cameraPos", camera.Position);
-       Shader::setFloat(program, "heightMultiplier", HEIGHT_MULTIPLIER);
-       glUseProgram(0);
-   }
+    for(size_t i = 0; i < shaders.size(); i++)
+    { 
+        GLuint program = shaders[i].program; 
+        glUseProgram(program);
+        Shader::setVec3(program, "cameraPos", camera.Position);
+        //todo: the height multiplier is no longer valid with the current implementation
+        Shader::setFloat(program, "heightMultiplier", HEIGHT_MULTIPLIER);
+        glUseProgram(0);
+    }
 }
 
 /**
 * Procedurally generates a mesh with the given parameters
 */
-void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>& vertices, std::vector<GLuint>& indices)
+void generateMesh(const float length, const int divPerSide, std::vector<ModelLoader::Vertex>& vertices, std::vector<GLuint>& indices)
 {
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
@@ -52,10 +53,8 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
 
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    // vertices - 3 coords, 3 normals, 2 texpoints
-    // TODO: normals and texture coods properly
 
-    const float uvCoord = length /divPerSide;
+    const float uvCoord = length / divPerSide;
     for(int y = 0; y <= divPerSide; y++)
     {
         for(int x = 0; x <= divPerSide; x++)
@@ -68,7 +67,7 @@ void generateMesh(float length, int divPerSide, std::vector<ModelLoader::Vertex>
                                       polygonLength * y);
             vertices.emplace_back(ModelLoader::Vertex{
                 pos, //position
-                glm::vec3(0.f), //normal
+                glm::vec3(0.f), //normal (to be set later)
                 UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
                 glm::vec3(0.f),
                 glm::vec3(0.f)
@@ -131,7 +130,7 @@ void runTerrainLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    Camera camera(glm::vec3(1, 1, 5));
+    Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 3, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
     constexpr float ambientLight = 0.4f;
     constexpr float specularVal = 0.1f;
@@ -147,11 +146,12 @@ void runTerrainLevel(GLFWwindow* window)
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
-    const glm::vec3 lightPos (5.f);
+    const glm::vec3 lightPos (TERRAIN_LENGTH / 2, TERRAIN_LENGTH / 2, 5);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    //todo: create a first time mouse_callback to calibrate and then re-set the cursor callback as the default one
+    glfwSetCursorPosCallback(window, mouseCallbackAdjustCursor);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float prevTime = (float) glfwGetTime();
@@ -186,10 +186,6 @@ void runTerrainLevel(GLFWwindow* window)
         generateMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
         terrain.meshes.emplace_back(vertices, indices, std::vector<ModelLoader::Texture>());
         terrain.addEntity(basicShader.program, projection);
-        //TODO: load texture
-        // ModelLoader::textureFromFile("grass.jpg", "./textures");
-        // ModelLoader::textureFromFile("rock.jpg", "./textures");
-        // ModelLoader::textureFromFile("snow.jpg", "./textures");
         terrain.meshes[0].textures.emplace_back(
             ModelLoader::Texture{
                 ModelLoader::textureFromFile("grass.jpg", "./textures"),
@@ -211,7 +207,7 @@ void runTerrainLevel(GLFWwindow* window)
                 ""
             }
         );
-        
+
         //models.emplace_back(terrain);
     }
 

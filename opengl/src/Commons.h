@@ -24,8 +24,14 @@ void handleKeyboardInput(GLFWwindow* window, float deltaTime);
 // Callback function for recalculating window size
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-// Function for handling mouse movement
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
+/**
+* Adjusts the cursor to the center. It then sets the default mouse callback as a cursor callback.
+* Using this to avoid the if statement every callback.
+*/
+void mouseCallbackAdjustCursor(GLFWwindow* window, double xposIn, double yposIn);
+
+// Default function for handling mouse movement
+void defaultMouseCallback(GLFWwindow* window, double xposIn, double yposIn);
 
 // Checks for whether an OpenGL error occurred. If one did,
 // it prints out the error type and ID

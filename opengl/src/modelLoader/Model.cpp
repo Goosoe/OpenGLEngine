@@ -54,7 +54,6 @@ void Mesh::drawHandmade(GLuint shaderId)
     // unsigned int specularNr = 1;
     for(unsigned int i = 0; i < textures.size(); i++)
     {
-
         // set proper texture unit before binding
         glActiveTexture(GL_TEXTURE0 + i); 
         //bind/activate existing texture unit
