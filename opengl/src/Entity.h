@@ -59,7 +59,7 @@ class Entity
         void setProjectionUniform(glm::mat4& projection);
 
         //TODO: make these values to be stored in entity - IMPLEMENT THIS AGAIN?
-        void updateLightingUniforms(glm::vec3& ambient, glm::vec3& diffuse, glm::vec3& specular);
+        // void updateLightingUniforms(glm::vec3& ambient, glm::vec3& diffuse, glm::vec3& specular);
         
 
     private:

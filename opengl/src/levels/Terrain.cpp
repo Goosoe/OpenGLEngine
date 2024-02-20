@@ -19,11 +19,12 @@
 //
 #define assertm(exp, msg) assert(((void)msg, exp))
 
-constexpr float NOISE_MULTIPLIER = 2.f;
-constexpr float PEAKS_MULTIPLIER = 0.25f;
-constexpr float SUB_PEAKS_MULTIPLIER = 8.f;
-//todo: send this as uniform
-constexpr float HEIGHT_MULTIPLIER = 2.f;
+//// Properties for terrain height generation
+constexpr int OCTAVES = 10;
+constexpr float LACUNARITY = 2.0;
+constexpr float GAIN = .5;
+//
+
 constexpr float UV_MULTIPLIER = 1.f;
 
 /**
@@ -56,15 +57,13 @@ void updateTerrainShader(const ShaderData& shader, const Camera& camera)
         const GLuint program = shader.program;
         glUseProgram(program);
         Shader::setVec3(program, "cameraPos", camera.Position);
-        //todo: the height multiplier is no longer valid with the current implementation
-        Shader::setFloat(program, "heightMultiplier", HEIGHT_MULTIPLIER);
         glUseProgram(0);
 }
 
 /**
-* Procedurally generates a mesh with the given parameters
+* Procedurally generates a mesh without taking into consideration any LOD, with the given parameters
 */
-void generateMesh(const float length, const int divPerSide, std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
+void generateSimpleMesh(const float length, const int divPerSide, std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
 {
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
@@ -79,11 +78,19 @@ void generateMesh(const float length, const int divPerSide, std::vector<Vertex>&
         for(int x = 0; x <= divPerSide; x++)
         {
             //coords
-            glm::vec3 pos = glm::vec3(polygonLength * x,
-                                      // (noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER),
-                                      //(noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER) + (noise.GetNoise((float)x * PEAKS_MULTIPLIER, (float)y * PEAKS_MULTIPLIER)),
-                                      (noise.GetNoise((float)x * NOISE_MULTIPLIER, (float)y * NOISE_MULTIPLIER) * HEIGHT_MULTIPLIER) + (noise.GetNoise((float)x * PEAKS_MULTIPLIER, (float)y * PEAKS_MULTIPLIER)) + (noise.GetNoise((float)x * SUB_PEAKS_MULTIPLIER, (float)y * SUB_PEAKS_MULTIPLIER)) / 5 ,
-                                      polygonLength * y);
+            glm::vec3 pos = glm::vec3(polygonLength * x,    //x
+                                      0,
+                                      polygonLength * y);   //z
+            //calculate height
+            float amplitude = 2.;
+            float frequency = 1.;
+            // Loop of octaves
+            for (int i = 0; i < OCTAVES; i++) {
+                pos.y += amplitude * noise.GetNoise(frequency * x, frequency * y);
+                frequency *= LACUNARITY;
+                amplitude *= GAIN;
+            }
+
             vertices.emplace_back(Vertex{
                 pos, //position
                 glm::vec3(0.f), //normal (to be set later)
@@ -159,17 +166,16 @@ void runTerrainLevel(GLFWwindow* window)
     const glm::vec3 objColor (1.f, 1.f, 1.f);
 
     //TODO: add resizable window feature
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH/ SCR_HEIGHT, 0.1f, 100.f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
 
     // setup window data
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
-    const glm::vec3 lightPos (TERRAIN_LENGTH / 2, TERRAIN_LENGTH / 2, 5);
+    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, TERRAIN_LENGTH / 4, 3);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //todo: create a first time mouse_callback to calibrate and then re-set the cursor callback as the default one
     glfwSetCursorPosCallback(window, mouseCallbackAdjustCursor);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -197,7 +203,7 @@ void runTerrainLevel(GLFWwindow* window)
         //====
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
-        generateMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
+        generateSimpleMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
         terrain.meshes.emplace_back(vertices, indices, std::vector<Texture>());
         terrain.addEntity(terrainShader.program, projection);
         terrain.meshes[0].textures.emplace_back(

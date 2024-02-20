@@ -2,7 +2,6 @@
 #include "GLFW/glfw3.h"
 #include "Camera.h"
 #include <glad/glad.h>
-#include <string>
 
 /** 
  * Has common functions and variables that are shared between levels

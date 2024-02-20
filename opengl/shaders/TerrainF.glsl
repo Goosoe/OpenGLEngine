@@ -12,8 +12,6 @@ uniform vec3 objColor;
 uniform float ambientVal;
 uniform float specularVal;
 
-uniform float heightMultiplier;
-
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform sampler2D tex2;
@@ -34,15 +32,13 @@ void main()
     vec3 specular = specularVal * spec * lightColor;
 
     vec3 lighting = ((ambientVal * lightColor) + diffuse + specular) * objColor;
-    //fragColor = vec4(lighting, 1.f);
-    //vec4 tex0Col = texture(tex0, texCoord);
-    //vec4 tex1Col = texture(tex1, texCoord);
-    //vec4 tex2Col = texture(tex2, texCoord);
-    //todo uniform height multiplier
-    const float GRASS_H = -0.8f * heightMultiplier;
-    const float ROCK_H = 0.5f * heightMultiplier;
-    const float SNOW_H = 0.9f * heightMultiplier;
 
+    //todo: uniform this
+    const float GRASS_H = -0.8f;
+    const float ROCK_H = 0.5f;
+    const float SNOW_H = 0.9f;
+
+    //todo: improve this
      if(worldPos.y < GRASS_H)  //grass
     {
         vec4 tex0Col = texture(tex0, texCoord);
@@ -69,5 +65,4 @@ void main()
        vec4 tex2Col = texture(tex2, texCoord);
        fragColor = tex2Col * vec4(lighting, 1.f);
    }
-    //fragColor = texture(tex0, texCoord) * vec4(lighting, 1.f);
 }
