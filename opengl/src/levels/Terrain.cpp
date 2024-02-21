@@ -17,6 +17,8 @@
 // uncomment to disable assert()
 // #define NDEBUG
 //
+namespace Terrain
+{
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 //// Properties for terrain height generation
@@ -140,6 +142,7 @@ void generateSimpleMesh(const float length, const int divPerSide, std::vector<Ve
     }
 }
 
+}; //Terrain namespace
 void runTerrainLevel(GLFWwindow* window)
 {
     //Terrain settings
@@ -203,7 +206,7 @@ void runTerrainLevel(GLFWwindow* window)
         //====
         std::vector<Vertex> vertices;
         std::vector<GLuint> indices;
-        generateSimpleMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
+        Terrain::generateSimpleMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
         terrain.meshes.emplace_back(vertices, indices, std::vector<Texture>());
         terrain.addEntity(terrainShader.program, projection);
         terrain.meshes[0].textures.emplace_back(
@@ -243,8 +246,8 @@ void runTerrainLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
 
-        updateTerrainShader(terrainShader, camera);
-        terrain.drawEntities(view, &drawTerrainEntity);
+        Terrain::updateTerrainShader(terrainShader, camera);
+        terrain.drawEntities(view, &Terrain::drawTerrainEntity);
 
         prevTime = currTime;
         

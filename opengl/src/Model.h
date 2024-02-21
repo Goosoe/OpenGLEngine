@@ -40,9 +40,9 @@ struct Texture
 class Mesh {
 public:
     // mesh data
-    std::vector<Vertex>       vertices;
+    std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
-    std::vector<Texture>      textures;
+    std::vector<Texture> textures;
 
     //  render data
     GLuint VAO, VBO, EBO;

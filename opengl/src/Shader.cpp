@@ -123,24 +123,24 @@ namespace Shader
             return true;
         }
 
-        void setModelUniform(GLuint shaderProgram, glm::mat4& model)
+        void setModelUniform(GLuint shaderProgram, const glm::mat4& model)
         {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
             glm::mat3 normalMat = transpose(inverse(glm::mat3(model)));
             glUniformMatrix3fv(glGetUniformLocation(shaderProgram, "normalMat"), 1, GL_FALSE, glm::value_ptr(normalMat));
         }
 
-        void setViewUniform(GLuint shaderProgram, glm::mat4& view)
+        void setViewUniform(GLuint shaderProgram, const glm::mat4& view)
         {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
         }
 
-        void setProjectionUniform(GLuint shaderProgram, glm::mat4& projection)
+        void setProjectionUniform(GLuint shaderProgram, const glm::mat4& projection)
         {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         }
 
-        void setMVPUniforms(GLuint shaderProgram, glm::mat4& model, glm::mat4& view, glm::mat4& projection)
+        void setMVPUniforms(GLuint shaderProgram, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
         {
             setModelUniform(shaderProgram, model);
             setViewUniform(shaderProgram, view);

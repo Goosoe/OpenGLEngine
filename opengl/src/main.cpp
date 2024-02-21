@@ -2,6 +2,7 @@
 #include "Commons.h"
 #include "levels/Teapot.h"
 #include "levels/Terrain.h"
+#include "levels/TerrainTesselation.h"
 
 // System headers
 #include <glad/glad.h>
@@ -73,7 +74,8 @@ int main()
 
     // TODO: make level loader and unloader
     // runTeapotLevel(window);
-    runTerrainLevel(window);
+    //runTerrainLevel(window);
+    runTerrainTesselationLevel(window);
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
     glfwTerminate();

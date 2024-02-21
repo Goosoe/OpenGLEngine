@@ -58,14 +58,14 @@ namespace Shader
         bool isValid(ShaderData& shaderData);
 
         //Sets the model uniform and updates and sets the normal matrix uniform
-        void setModelUniform(GLuint shaderProgram, glm::mat4& model);
+        void setModelUniform(GLuint shaderProgram, const glm::mat4& model);
 
-        void setViewUniform(GLuint shaderProgram, glm::mat4& view);
+        void setViewUniform(GLuint shaderProgram, const glm::mat4& view);
 
-        void setProjectionUniform(GLuint shaderProgram, glm::mat4& projection);
+        void setProjectionUniform(GLuint shaderProgram, const glm::mat4& projection);
 
         // Sets Model, View and Projection Uniform
-        void setMVPUniforms(GLuint shaderProgram, glm::mat4& model, glm::mat4& view, glm::mat4& projection);
+        void setMVPUniforms(GLuint shaderProgram, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
         /* Helper function for setting shader uniforms */
         // ------------------------------------------------------------------------
