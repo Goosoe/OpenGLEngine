@@ -6,9 +6,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-/**
- * Structs and classes used when using assimp to load data
- */
 /** MESH **/
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures) :
     vertices(vertices),
@@ -31,7 +28,7 @@ void Mesh::setupMesh()
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), 
-            &indices[0], GL_STATIC_DRAW);
+                 &indices[0], GL_STATIC_DRAW);
 
     // vertex positions
     glEnableVertexAttribArray(0);

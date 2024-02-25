@@ -8,6 +8,9 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [x] Replace Vertex and Mesh created in Terrain Model. Just refactor it pls
     - [x] Average normals with data from adjacent vertices, right now it's just replacing old normal with the most recently calculated one
     - [x] Add texture + calculate texture coords
+    - [x] Create a patch.cpp class that acts similar to mesh but for printing a patch
+    - [] Add noise height again. Investigate how to send proper data to tesselation evaluation shader. Maybe use interpolation?
+    - [] Recreate Terrain level to TerrainTesselation then change as necessary
     - [] Make it bigger + Optimize it 
     - [] mipmap the mesh
     - [] Make it infinite by repositioning the center of the mesh to the camera
@@ -24,3 +27,8 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [] Make model/entity functions for manually created meshes
     - [] Make entity draw() function work with both loaded model and handmade model/textures
     - [] Hot reload shaders
+
+
+
+Questions/investigate:
+    - Tesselation Evaluation shader. Now that we create multiple vertices in Tesselation shader, we have to calculate the normals per vertex, unlike pre-calculating as we did. Is it possible to calculate part of the normal matrix still?

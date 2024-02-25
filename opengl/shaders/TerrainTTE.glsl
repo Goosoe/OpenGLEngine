@@ -6,13 +6,17 @@ layout (quads, fractional_odd_spacing, ccw) in;
 uniform mat4 model;           // the model matrix
 uniform mat4 view;            // the view matrix
 uniform mat4 projection;      // the projection matrix
+//to avoid deformations of the normals during scaling or modifications during a translation
+uniform mat3 normalMat;
 
 // received from Tessellation Control Shader - all texture coordinates for the patch vertices
 in vec2 TextureCoord[];
+//in vec3 aNormal;
 
 // in vec3 aWorldPos;
 // out vec3 worldPos;
 out float height;
+out vec3 normal;
 
 void main()
 {
@@ -34,9 +38,10 @@ void main()
 
     // lookup texel at patch coordinate for height and scale + shift as desired
     //Height = texture(heightMap, texCoord).y * 64.0 - 16.0;
-    height = mix(gl_in[0].gl_Position.y, gl_in[1].gl_Position.y, 1.f);
-    height = mix(height, gl_in[2].gl_Position.y, 1.f);
-    height = mix(height, gl_in[3].gl_Position.y, 1.f);
+    // height = mix(gl_in[0].gl_Position.y, gl_in[1].gl_Position.y, 1.f);
+    // height = mix(height, gl_in[2].gl_Position.y, 1.f);
+    // height = mix(height, gl_in[3].gl_Position.y, 1.f);
+    height = 1.f;
 
     // ----------------------------------------------------------------------
     // retrieve control point position coordinates
@@ -48,6 +53,7 @@ void main()
     // compute patch surface normal
     vec4 uVec = p01 - p00;
     vec4 vVec = p10 - p00;
+    //
     vec4 normal = normalize( vec4(cross(vVec.xyz, uVec.xyz), 0) );
 
     // bilinearly interpolate position coordinate across patch
@@ -61,5 +67,8 @@ void main()
     // ----------------------------------------------------------------------
     // output patch point position in clip space
     gl_Position = projection * view * model * p;
+    //todo: this needs to go to TE
+    // normal = normalMat * aNormal;
+ //   fragPos = vec3(model * vec4(aPos, 1.0f));
     // worldPos = aWorldPos;
 }
