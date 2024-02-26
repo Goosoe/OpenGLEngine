@@ -119,7 +119,3 @@ private:
                               std::string typeName);
 };
 
-/**
- * Loads a texture from path and retuns the textureID
- */
-unsigned int textureFromFile(const char *path, const std::string &directory);

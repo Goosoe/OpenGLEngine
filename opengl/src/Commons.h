@@ -35,3 +35,8 @@ void defaultMouseCallback(GLFWwindow* window, double xposIn, double yposIn);
 // Checks for whether an OpenGL error occurred. If one did,
 // it prints out the error type and ID
 void printGLError();
+
+/**
+ * Loads a texture from path and retuns the textureID
+ */
+unsigned int textureFromFile(const char *path, const std::string &directory);

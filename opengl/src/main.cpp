@@ -74,8 +74,8 @@ int main()
 
     // TODO: make level loader and unloader
     // runTeapotLevel(window);
-    // runTerrainLevel(window);
-    runTerrainTesselationLevel(window);
+    //runTerrainLevel(window);
+     runTerrainTesselationLevel(window);
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
     glfwTerminate();

@@ -20,9 +20,9 @@
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 //// Properties for terrain height generation
-constexpr int OCTAVES = 10;
-constexpr float LACUNARITY = 2.0;
-constexpr float GAIN = .5;
+// constexpr int OCTAVES = 10;
+// constexpr float LACUNARITY = 2.0;
+// constexpr float GAIN = .5;
 //
 
 constexpr float UV_MULTIPLIER = 1.f;
@@ -38,18 +38,18 @@ void updateTerrainShader(const ShaderData& shader, const Camera& camera)
        glUseProgram(0);
 }
 
-void generateNoiseHeight(FastNoiseLite& noise, glm::vec3& pos)
-{
-    //calculate height
-    float amplitude = 2.;
-    float frequency = 1.;
-    // Loop of octaves
-    for (int i = 0; i < OCTAVES; i++) {
-        pos.y += amplitude * noise.GetNoise(frequency * pos.x, frequency * pos.y);
-        frequency *= LACUNARITY;
-        amplitude *= GAIN;
-    }
-}
+// void generateNoiseHeight(FastNoiseLite& noise, glm::vec3& pos)
+// {
+//     //calculate height
+//     float amplitude = 2.;
+//     float frequency = 1.;
+//     // Loop of octaves
+//     for (int i = 0; i < OCTAVES; i++) {
+//         pos.y += amplitude * noise.GetNoise(frequency * pos.x, frequency * pos.y);
+//         frequency *= LACUNARITY;
+//         amplitude *= GAIN;
+//     }
+// }
 /**
 * Procedurally generates a mesh without taking into consideration any LOD, with the given parameters
 */
@@ -64,7 +64,7 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 
     //todo: normals not being used
-    const float uvCoord = length / divPerSide;
+    // const float uvCoord = length / divPerSide;
     for(int y = 0; y < divPerSide; y++)
     {
         for(int x = 0; x < divPerSide; x++)
@@ -73,48 +73,49 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
             ::glm::vec3 pos1 = glm::vec3(polygonLength * x,    //x
                                         0,
                                         polygonLength * y);   //z
-            generateNoiseHeight(noise, pos1);
+            // generateNoiseHeight(noise, pos1);
 
-            std::cout << pos1.x << "," << pos1.y << "," << pos1.z << "\n";
+            // std::cout << pos1.x << "," << pos1.y << "," << pos1.z << "\n";
 
             ::glm::vec3 pos2 = glm::vec3(polygonLength * x,    //x
                                         0,
                                         polygonLength * y + polygonLength);   //z
-            generateNoiseHeight(noise, pos2);
+            // generateNoiseHeight(noise, pos2);
 
-            std::cout << pos2.x << "," << pos2.y << "," << pos2.z << "\n";
+            // std::cout << pos2.x << "," << pos2.y << "," << pos2.z << "\n";
             ::glm::vec3 pos3 = glm::vec3(polygonLength * x + polygonLength,    //x
                                         0,
                                         polygonLength * y);   //z
-            generateNoiseHeight(noise, pos3);
+            // generateNoiseHeight(noise, pos3);
 
-            std::cout << pos3.x << "," << pos3.y << "," << pos3.z << "\n";
+            // std::cout << pos3.x << "," << pos3.y << "," << pos3.z << "\n";
+
             ::glm::vec3 pos4 = glm::vec3(polygonLength * x + polygonLength,    //x
                                         0,
                                         polygonLength * y + polygonLength);   //z
 
-            generateNoiseHeight(noise, pos4);
-            std::cout << pos4.x << "," << pos4.y << "," << pos4.z << "\n";
+            // generateNoiseHeight(noise, pos4);
+            // std::cout << pos4.x << "," << pos4.y << "," << pos4.z << "\n";
 
             vertices.emplace_back(Patch::Vertex{
                 pos1, //position
-                glm::vec3(0.f, 1.f, 0.f), //normal (to be set later)
-                UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
+                glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2(x / (float)divPerSide , y / (float)divPerSide), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos2, //position
-                glm::vec3(0.f, 1.f, 0.f), //normal (to be set later)
-                UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
+                glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2(x / (float)divPerSide, (y + 1) / (float)divPerSide), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos3, //position
-                glm::vec3(0.f, 1.f, 0.f), //normal (to be set later)
-                UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
+                glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2((x + 1) / (float)divPerSide, y / (float)divPerSide), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos4, //position
-                glm::vec3(0.f, 1.f, 0.f), //normal (to be set later)
-                UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
+                glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2((x + 1) / (float)divPerSide, (y + 1) / (float)divPerSide), // texCoords
             });
         }
     }
@@ -161,13 +162,13 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
 void runTerrainTesselationLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 2;
-    constexpr int TERRAIN_LENGTH = 20;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 15;
+    constexpr int TERRAIN_LENGTH = 100;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+    glDepthFunc(GL_LESS);
 
     // default clearing colour 
     glClearColor(0.3f, 0.5f, 0.8f, 1.0f);
@@ -230,21 +231,28 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         terrain.addEntity(terrainShader.program, projection);
         terrain.meshes[0].textures.emplace_back(
             Patch::Texture{
-                Patch::textureFromFile("grass.jpg", "./textures"),
+                textureFromFile("heightmapSample.png", "./textures"),
                 "",
                 "",
             }
         );
         terrain.meshes[0].textures.emplace_back(
             Patch::Texture{
-                Patch::textureFromFile("rock.jpg", "./textures"),
+                textureFromFile("grass.jpg", "./textures"),
+                "",
+                "",
+            }
+        );
+        terrain.meshes[0].textures.emplace_back(
+            Patch::Texture{
+                textureFromFile("rock.jpg", "./textures"),
                 "",
                 ""
             }
         );
         terrain.meshes[0].textures.emplace_back(
             Patch::Texture{
-                Patch::textureFromFile("snow.jpg", "./textures"),
+                textureFromFile("snow.jpg", "./textures"),
                 "",
                 ""
             }

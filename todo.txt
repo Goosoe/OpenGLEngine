@@ -10,6 +10,7 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [x] Add texture + calculate texture coords
     - [x] Create a patch.cpp class that acts similar to mesh but for printing a patch
     - [] Add noise height again. Investigate how to send proper data to tesselation evaluation shader. Maybe use interpolation?
+    - [] Make a program that converts noise to texture map/data to be used in opengl or do something like libnoise?
     - [] Recreate Terrain level to TerrainTesselation then change as necessary
     - [] Make it bigger + Optimize it 
     - [] mipmap the mesh
