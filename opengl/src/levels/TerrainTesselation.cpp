@@ -58,6 +58,7 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
     const float polygonLength = length / divPerSide;
+    // const float uvCoord = length / divPerSide;
 
 
     FastNoiseLite noise;
@@ -100,22 +101,22 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
             vertices.emplace_back(Patch::Vertex{
                 pos1, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2(x / (float)divPerSide , y / (float)divPerSide), // texCoords
+                glm::vec2(x / (float)polygonLength , y / (float)polygonLength), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos2, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2(x / (float)divPerSide, (y + 1) / (float)divPerSide), // texCoords
+                glm::vec2(x / (float)polygonLength, (y + 1) / (float)polygonLength), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos3, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2((x + 1) / (float)divPerSide, y / (float)divPerSide), // texCoords
+                glm::vec2((x + 1) / (float)polygonLength, y / (float)polygonLength), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos4, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2((x + 1) / (float)divPerSide, (y + 1) / (float)divPerSide), // texCoords
+                glm::vec2((x + 1) / (float)polygonLength, (y + 1) / (float)polygonLength), // texCoords
             });
         }
     }
@@ -162,8 +163,8 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
 void runTerrainTesselationLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 15;
-    constexpr int TERRAIN_LENGTH = 100;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 1;
+    constexpr int TERRAIN_LENGTH = 10;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -175,7 +176,8 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 3, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    // Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 3, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    Camera camera(glm::vec3(0, 3, 0), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
     constexpr float ambientLight = 0.4f;
     constexpr float specularVal = 0.1f;

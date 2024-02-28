@@ -37,13 +37,18 @@ void main()
 
     // bilinearly interpolate texture coordinate across patch
     // vec2 t0 = (t01 - t00) * u + t00;
+     vec2 t0 = mix(t00, t01, u);
     // vec2 t1 = (t11 - t10) * u + t10;
+     vec2 t1 = mix(t10, t11, u);
     // vec2 texCoord = (t1 - t0) * v + t0;
-    uv = vec2(u,v);
+    vec2 texCoord = mix(t0, t1, v);
+    // uv = vec2(u * TextureCoord[2].x, v * TextureCoord[1]);
+    uv = vec2(texCoord);
+    // uv = vec2(u,v);
 
     // lookup texel at patch coordinate for height and scale + shift as desired
     // float height = texture(tex0, texCoord).y; // * 64.0 - 16.0;;
-    height = texture(tex0, vec2(u,v)).y; // * 64.0 - 16.0;;
+    height = texture(tex0, uv).y; // * 64.0 - 16.0;;
     // texTest = TextureCoord[0];
     // float height = texture(tex0, texCoord).y * 64.0 - 16.0;;
     // height = mix(gl_in[0].gl_Position.y, gl_in[1].gl_Position.y, 1.f);
@@ -67,14 +72,17 @@ void main()
     normal = normalize(normalMat * (aNormal[0] + aNormal[1] + aNormal[2] + aNormal[3]) / 4);
 
     // bilinearly interpolate position coordinate across patch
-    vec4 p0 = (p01 - p00) * u + p00;
-    vec4 p1 = (p11 - p10) * u + p10;
-    vec4 p = (p1 - p0) * v + p0;
+    //vec4 p0 = (p01 - p00) * u + p00; they are the same
+    vec4 p0 = mix(p00, p01, u);
+    //vec4 p1 = (p11 - p10) * u + p10;
+    vec4 p1 = mix(p10, p11, u);
+    //vec4 p = (p1 - p0) * v + p0;
+    vec4 p = mix(p0, p1, v);
 
     // displace point along normal
      // p += normal * height;
-    //p += vec4(normal * height, 1.f);
-    p.y = height;
+    p += vec4(normal * height, 1.f);
+    // p.y = height;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

@@ -74,7 +74,6 @@ void generateSimpleMesh(const float length, const int divPerSide, std::vector<Ve
     FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 
-    const float uvCoord = length / divPerSide;
     for(int y = 0; y <= divPerSide; y++)
     {
         for(int x = 0; x <= divPerSide; x++)
@@ -96,7 +95,7 @@ void generateSimpleMesh(const float length, const int divPerSide, std::vector<Ve
             vertices.emplace_back(Vertex{
                 pos, //position
                 glm::vec3(0.f), //normal (to be set later)
-                UV_MULTIPLIER * glm::vec2(x * uvCoord, y * uvCoord), // texCoords
+                UV_MULTIPLIER * glm::vec2(x * polygonLength, y * polygonLength), // texCoords
                 glm::vec3(0.f),
                 glm::vec3(0.f)
             });
@@ -250,7 +249,7 @@ void runTerrainLevel(GLFWwindow* window)
         terrain.drawEntities(view, &Terrain::drawTerrainEntity);
 
         prevTime = currTime;
-        
+
         // Handle other events
         glfwPollEvents();
         handleKeyboardInput(window, deltaTime);

@@ -55,6 +55,7 @@ void Mesh::draw(GLuint shaderId)
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawArrays(GL_PATCHES, 0, vertices.size());
+    // glDrawArrays(GL_PATCHES, 0, 4*15*15);
     glBindVertexArray(0);
 }
 
