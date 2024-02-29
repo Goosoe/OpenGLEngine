@@ -1,17 +1,11 @@
 #include "TerrainTesselation.h"
 #include "FastNoiseLite.h"
 #include "GLFW/glfw3.h"
-#include <glad/glad.h>
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_float4x4.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include <glad/gl.h>
 #include "Camera.h"
 #include "Commons.h"
 #include "Patch.h"
 #include "Shader.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <cassert>
 
 // uncomment to disable assert()
@@ -25,7 +19,7 @@
 // constexpr float GAIN = .5;
 //
 
-constexpr float UV_MULTIPLIER = 1.f;
+// constexpr float UV_MULTIPLIER = 1.f;
 
 /**
  * iterates over shader vector and updates their common uniforms
@@ -71,53 +65,59 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
         for(int x = 0; x < divPerSide; x++)
         {
             //coords
-            ::glm::vec3 pos1 = glm::vec3(polygonLength * x,    //x
+            glm::vec3 pos1 = glm::vec3(polygonLength * x,    //x
                                         0,
                                         polygonLength * y);   //z
             // generateNoiseHeight(noise, pos1);
 
             // std::cout << pos1.x << "," << pos1.y << "," << pos1.z << "\n";
 
-            ::glm::vec3 pos2 = glm::vec3(polygonLength * x,    //x
+
+            // std::cout << pos2.x << "," << pos2.y << "," << pos2.z << "\n";
+            glm::vec3 pos2 = glm::vec3(polygonLength * x + polygonLength,    //x
+                                        0,
+                                        polygonLength * y);   //z
+
+            // generateNoiseHeight(noise, pos3);
+            glm::vec3 pos3 = glm::vec3(polygonLength * x,    //x
                                         0,
                                         polygonLength * y + polygonLength);   //z
             // generateNoiseHeight(noise, pos2);
 
-            // std::cout << pos2.x << "," << pos2.y << "," << pos2.z << "\n";
-            ::glm::vec3 pos3 = glm::vec3(polygonLength * x + polygonLength,    //x
-                                        0,
-                                        polygonLength * y);   //z
-            // generateNoiseHeight(noise, pos3);
-
             // std::cout << pos3.x << "," << pos3.y << "," << pos3.z << "\n";
 
-            ::glm::vec3 pos4 = glm::vec3(polygonLength * x + polygonLength,    //x
+            glm::vec3 pos4 = glm::vec3(polygonLength * x + polygonLength,    //x
                                         0,
                                         polygonLength * y + polygonLength);   //z
 
             // generateNoiseHeight(noise, pos4);
             // std::cout << pos4.x << "," << pos4.y << "," << pos4.z << "\n";
 
+            // std::cout << "Adding 4 verts\n";
             vertices.emplace_back(Patch::Vertex{
-                pos1, //position
-                glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2(x / (float)polygonLength , y / (float)polygonLength), // texCoords
+                pos4, //position
+                // glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2(x / (float)divPerSide , y / (float)divPerSide), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos2, //position
-                glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2(x / (float)polygonLength, (y + 1) / (float)polygonLength), // texCoords
+                // glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2(x / (float)divPerSide, (y + 1) / (float)divPerSide), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
                 pos3, //position
-                glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2((x + 1) / (float)polygonLength, y / (float)polygonLength), // texCoords
+                // glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2((x + 1) / (float)divPerSide, y / (float)divPerSide), // texCoords
             });
             vertices.emplace_back(Patch::Vertex{
-                pos4, //position
-                glm::vec3(0.f, 1.f, 0.f),   //normal
-                glm::vec2((x + 1) / (float)polygonLength, (y + 1) / (float)polygonLength), // texCoords
+                pos1, //position
+                // glm::vec3(0.f, 1.f, 0.f),   //normal
+                glm::vec2((x + 1) / (float)divPerSide, (y + 1) / (float)divPerSide), // texCoords
             });
+            // std::cout << vertices[0].texCoords.x << " " << vertices[0].texCoords.y << "\n";
+            // std::cout << vertices[1].texCoords.x << " " << vertices[1].texCoords.y << "\n";
+            // std::cout << vertices[2].texCoords.x << " " << vertices[2].texCoords.y << "\n";
+            // std::cout << vertices[3].texCoords.x << " " << vertices[3].texCoords.y << "\n";
         }
     }
 
@@ -209,6 +209,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     // std::vector<ShaderData> shaders;
 
     //Sets the terrain model
+    std::vector<Patch::Vertex> vertices;
     {
         terrainShader.program = Shader::createProgram();
         // Shader::makeBasicShader(terrainShader, "./opengl/shaders/TerrainTesselationV.glsl", "./opengl/shaders/TerrainTesselationF.glsl");
@@ -227,7 +228,6 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         glUseProgram(0);
 
         //====
-        std::vector<Patch::Vertex> vertices;
         generatePatch(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices);
         terrain.meshes.emplace_back(vertices, std::vector<Patch::Texture>());
         terrain.addEntity(terrainShader.program, projection);
@@ -287,5 +287,11 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
         // Flip buffers
         glfwSwapBuffers(window);
+        // std::cout << "======\n";
+        // std::cout << vertices[0].texCoords.x << " " << vertices[0].texCoords.y << "\n";
+        // std::cout << vertices[1].texCoords.x << " " << vertices[1].texCoords.y << "\n";
+        // std::cout << vertices[2].texCoords.x << " " << vertices[2].texCoords.y << "\n";
+        // std::cout << vertices[3].texCoords.x << " " << vertices[3].texCoords.y << "\n";
+        // std::cout << "======\n";
     }
 }

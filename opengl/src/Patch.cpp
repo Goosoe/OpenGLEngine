@@ -1,6 +1,6 @@
 #include "Patch.h"
-
 #include <iostream>
+
 
 namespace Patch
 {
@@ -20,17 +20,18 @@ void Mesh::setupMesh()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+    std::cout << sizeof(Vertex) << "===============";
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);  
 
     // vertex positions
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     // vertex normals
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    // glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     // vertex texture coords
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 
     //todo: magic number
     glPatchParameteri(GL_PATCH_VERTICES, 4);
@@ -49,7 +50,7 @@ void Mesh::draw(GLuint shaderId)
         //assign uniforms of current shader to texture unit
         Shader::setInt(shaderId, ("tex" + std::to_string(i)), i);
     }
-    glActiveTexture(GL_TEXTURE0);
+    // glActiveTexture(GL_TEXTURE0);
 
     // draw mesh
     glBindVertexArray(VAO);

@@ -5,7 +5,7 @@ layout (vertices=4) out;
 
 // varying input from vertex shader
 in vec2 TexCoord[];
-in vec3 normal[];
+// in vec3 normal[];
 
 // varying output to evaluation shader
 out vec2 TextureCoord[];
@@ -26,5 +26,5 @@ void main()
 
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
-    aNormal[gl_InvocationID] = normal[gl_InvocationID];
+    // aNormal[gl_InvocationID] = normal[gl_InvocationID];
 }

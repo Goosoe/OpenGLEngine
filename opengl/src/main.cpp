@@ -56,7 +56,11 @@ GLFWwindow* initialise()
 
     // Let the window be the current OpenGL context and initialise glad
     glfwMakeContextCurrent(window);
-    gladLoadGL();
+    int version = gladLoadGL(glfwGetProcAddress);
+    if (version == 0) {
+        printf("Failed to initialize OpenGL context\n");
+        return nullptr;
+    }
 
     // Print various OpenGL information to stdout
     printf("%s: %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
@@ -71,6 +75,10 @@ int main()
 {
     // Initialise window using GLFW
     GLFWwindow* window = initialise();
+    if(!window)
+    {
+        return EXIT_FAILURE;
+    }
 
     // TODO: make level loader and unloader
     // runTeapotLevel(window);

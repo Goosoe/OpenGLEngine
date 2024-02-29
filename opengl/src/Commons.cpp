@@ -1,6 +1,7 @@
 #include "Commons.h"
 #include "Camera.h"
 #include <array>
+#include <iostream>
 #include <string>
 
 

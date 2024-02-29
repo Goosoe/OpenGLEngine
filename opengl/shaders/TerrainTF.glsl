@@ -1,11 +1,11 @@
-#version 430 core
+#version 410 core
 
 in vec3 normal;
 in vec3 fragPos;
 // in vec3 worldPos;
 in vec2 uv;
 in float height;
-//in vec2 texTest;
+// in vec2 texTest;
 
 uniform vec3 lightPos;
 uniform vec3 cameraPos;
@@ -25,8 +25,9 @@ void main()
 {
     // float h = (height + 16)/64.0f;
     // fragColor = vec4(texTest , 0.f, 1.f);
-    // fragColor = vec4(1.f);
-    // return;
+    // fragColor = vec4(height, 0.f, 0.f, 1.f);
+    fragColor = vec4(uv, 0.f, 1.f);
+    return;
     //fragColor = vec4(h, h, h, 1.0);
 
     vec3 lightDir = normalize(lightPos - fragPos);
