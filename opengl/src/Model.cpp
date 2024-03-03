@@ -84,7 +84,7 @@ void Model::drawEntities(glm::mat4& view)
         entities[i].setViewUniform(view);
         for(unsigned int j = 0; j < meshes.size(); j++)
         {
-            meshes[i].drawLoaded(currentShaderId);
+            meshes[j].drawLoaded(currentShaderId);
         }
         glUseProgram(0);
     }

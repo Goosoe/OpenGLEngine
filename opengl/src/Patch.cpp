@@ -1,5 +1,4 @@
 #include "Patch.h"
-#include <iostream>
 
 
 namespace Patch
@@ -20,18 +19,17 @@ void Mesh::setupMesh()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    std::cout << sizeof(Vertex) << "===============";
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);  
 
     // vertex positions
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     // vertex normals
-    // glEnableVertexAttribArray(1);
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-    // vertex texture coords
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    // vertex texture coords
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 
     //todo: magic number
     glPatchParameteri(GL_PATCH_VERTICES, 4);
@@ -54,9 +52,7 @@ void Mesh::draw(GLuint shaderId)
 
     // draw mesh
     glBindVertexArray(VAO);
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawArrays(GL_PATCHES, 0, vertices.size());
-    // glDrawArrays(GL_PATCHES, 0, 4*15*15);
     glBindVertexArray(0);
 }
 
@@ -78,7 +74,7 @@ void Patch::drawEntities(glm::mat4& view)
         entities[i].setViewUniform(view);
         for(unsigned int j = 0; j < meshes.size(); j++)
         {
-            meshes[i].draw(currentShaderId);
+            meshes[j].draw(currentShaderId);
         }
         glUseProgram(0);
     }

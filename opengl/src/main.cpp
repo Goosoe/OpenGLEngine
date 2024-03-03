@@ -56,11 +56,7 @@ GLFWwindow* initialise()
 
     // Let the window be the current OpenGL context and initialise glad
     glfwMakeContextCurrent(window);
-    int version = gladLoadGL(glfwGetProcAddress);
-    if (version == 0) {
-        printf("Failed to initialize OpenGL context\n");
-        return nullptr;
-    }
+    gladLoadGL();
 
     // Print various OpenGL information to stdout
     printf("%s: %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
@@ -82,8 +78,8 @@ int main()
 
     // TODO: make level loader and unloader
     // runTeapotLevel(window);
-    //runTerrainLevel(window);
-     runTerrainTesselationLevel(window);
+    // runTerrainLevel(window);
+    runTerrainTesselationLevel(window);
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
     glfwTerminate();
