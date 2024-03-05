@@ -8,12 +8,6 @@ in EvalFrag
     vec2 uv;
 } evalFrag;
 
-// in vec3 normal;
-// in vec3 fragPos;
-// // in vec3 worldPos;
-// in vec2 uv;
-// in float height;
-// in vec2 texTest;
 
 uniform vec3 lightPos;
 uniform vec3 cameraPos;
@@ -22,7 +16,6 @@ uniform vec3 objColor;
 uniform float ambientVal;
 uniform float specularVal;
 
-// uniform sampler2D tex0; // heightmap
 uniform sampler2D tex1; // grass
 uniform sampler2D tex2; // rock
 uniform sampler2D tex3; // snow
@@ -48,7 +41,7 @@ void main()
     const float ROCK_H = 0.4f;
     const float SNOW_H = 0.9f * 2;
 
-    //todo: improve this
+    //todo: improve this 16 IS A MAGIC NUMBER
      if(evalFrag.height < GRASS_H)  //grass
      {
          vec4 tex1Col = texture(tex1, 16 * evalFrag.uv);

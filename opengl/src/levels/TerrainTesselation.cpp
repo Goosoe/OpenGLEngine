@@ -10,16 +10,8 @@
 
 // uncomment to disable assert()
 // #define NDEBUG
-//
+
 #define assertm(exp, msg) assert(((void)msg, exp))
-
-//// Properties for terrain height generation
-// constexpr int OCTAVES = 10;
-// constexpr float LACUNARITY = 2.0;
-// constexpr float GAIN = .5;
-//
-
-// constexpr float UV_MULTIPLIER = 1.f;
 
 /**
  * iterates over shader vector and updates their common uniforms
@@ -40,7 +32,6 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
     const float polygonLength = length / divPerSide;
-    // const float uvCoord = length / divPerSide;
 
 
     FastNoiseLite noise;
@@ -89,13 +80,6 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
                 glm::vec3(0.f, 1.f, 0.f),   //normal
                 glm::vec2((float)(x + 1) / divPerSide , (float)(y + 1) / divPerSide), // texCoords
             });
-//            std::cout << "=======\n";
-//            std::cout << x<< " " << y << "\n";
-//            std::cout << (float) vertices[(x * 4) + (y * 4 * divPerSide)].texCoords.x << " " <<  (float)vertices[(x * 4) + (y * 4 * divPerSide)].texCoords.y << "\n";
-//            std::cout << (float) vertices[1 + (x * 4) + (y * 4 * divPerSide)].texCoords.x << " " <<  (float)vertices[1 +(x * 4) + (y * 4 * divPerSide)].texCoords.y << "\n";
-//            std::cout << (float) vertices[2 + (x * 4) + (y * 4 * divPerSide)].texCoords.x << " " <<  (float)vertices[2 +(x * 4) + (y * 4 * divPerSide)].texCoords.y << "\n";
-//            std::cout << (float) vertices[3 + (x * 4) + (y * 4 * divPerSide)].texCoords.x << " " <<  (float)vertices[3 +(x * 4) + (y * 4 * divPerSide)].texCoords.y << "\n";
-//            std::cout << "=======\n";
         }
     }
 }
@@ -103,8 +87,8 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
 void runTerrainTesselationLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 5;
-    constexpr int TERRAIN_LENGTH = 10;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 50;
+    constexpr int TERRAIN_LENGTH = 100;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -116,8 +100,10 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    // Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
-    Camera camera(glm::vec3(0, 3, 0), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    // Camera camera(glm::vec3(TERRAIN_LENGTH / 4, 8, TERRAIN_LENGTH / 4), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    // Camera camera(glm::vec3(100.f, 8, 100.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    // Camera camera(glm::vec3(0, 3, 0), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
     constexpr float ambientLight = 0.4f;
     constexpr float specularVal = 0.1f;
@@ -142,11 +128,8 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     float prevTime = (float) glfwGetTime();
 
-    //setup data vectors
-    // std::vector<Model> models;
     Patch::Patch terrain;
     ShaderData terrainShader;
-    // std::vector<ShaderData> shaders;
 
     //Sets the terrain model
     {
