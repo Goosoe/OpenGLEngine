@@ -58,7 +58,7 @@ void updateTerrainShader(const ShaderData& shader, const Camera& camera)
 {
         const GLuint program = shader.program;
         glUseProgram(program);
-        Shader::setVec3(program, "cameraPos", camera.Position);
+        Shader::setVec3(program, "cameraPos", camera.position);
         glUseProgram(0);
 }
 
@@ -243,7 +243,7 @@ void runTerrainLevel(GLFWwindow* window)
         // Draw your scene here
 
         // update view matrix with updated camera data
-        view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
+        view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
         Terrain::updateTerrainShader(terrainShader, camera);
         terrain.drawEntities(view, &Terrain::drawTerrainEntity);

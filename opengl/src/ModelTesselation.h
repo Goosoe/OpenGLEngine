@@ -5,7 +5,7 @@
 /**
  *  Data structures for tesselated terrain.
  */
-namespace Patch
+namespace ModelTesselation
 {
 struct Vertex 
 {
@@ -47,7 +47,7 @@ private:
  * A model will hold information about all the necessary data for it to be rendered in a scene. 
  * It will also hold information regarding entities of itself that are present in the scene
  */
-class Patch 
+class Model 
 {
 public:
     // model data
@@ -64,7 +64,7 @@ public:
     //std::vector<Entity> hiddenEntities;
 
     //empty builder for creating our own models objects
-    Patch();
+    Model();
 
     //todo: add entity with move semantics
     void addEntity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f),

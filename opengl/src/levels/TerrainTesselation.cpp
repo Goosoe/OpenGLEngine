@@ -4,9 +4,10 @@
 #include <glad/glad.h>
 #include "Camera.h"
 #include "Commons.h"
-#include "Patch.h"
+#include "ModelTesselation.h"
 #include "Shader.h"
 #include <cassert>
+#include <iostream>
 
 // uncomment to disable assert()
 // #define NDEBUG
@@ -20,14 +21,14 @@ void updateTerrainShader(const ShaderData& shader, const Camera& camera)
 {
        const GLuint program = shader.program;
        glUseProgram(program);
-       Shader::setVec3(program, "cameraPos", camera.Position);
+       Shader::setVec3(program, "cameraPos", camera.position);
        glUseProgram(0);
 }
 
 /**
 * Procedurally generates a mesh without taking into consideration any LOD, with the given parameters
 */
-void generatePatch(const float length, const int divPerSide, std::vector<Patch::Vertex>& vertices)
+void generatePatch(const float length, const int divPerSide, std::vector<ModelTesselation::Vertex>& vertices)
 {
     assert(length > 0 && "Length must be > 0");
     assert(divPerSide > 0 && " must be > 0");
@@ -60,22 +61,22 @@ void generatePatch(const float length, const int divPerSide, std::vector<Patch::
                                         0,
                                         polygonLength * y + polygonLength);   //z
 
-            vertices.emplace_back(Patch::Vertex{
+            vertices.emplace_back(ModelTesselation::Vertex{
                 pos1, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
                 glm::vec2((float)(x) / divPerSide, (float)(y) / divPerSide), // texCoords
             });
-            vertices.emplace_back(Patch::Vertex{
+            vertices.emplace_back(ModelTesselation::Vertex{
                 pos2, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
                 glm::vec2((float)(x + 1) / divPerSide, (float)(y) / divPerSide), // texCoords
             });
-            vertices.emplace_back(Patch::Vertex{
+            vertices.emplace_back(ModelTesselation::Vertex{
                 pos3, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
                 glm::vec2((float)(x) / divPerSide, (float)(y + 1) / divPerSide), // texCoords
             });
-            vertices.emplace_back(Patch::Vertex{
+            vertices.emplace_back(ModelTesselation::Vertex{
                 pos4, //position
                 glm::vec3(0.f, 1.f, 0.f),   //normal
                 glm::vec2((float)(x + 1) / divPerSide , (float)(y + 1) / divPerSide), // texCoords
@@ -88,7 +89,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 {
     //Terrain settings
     constexpr int TERRAIN_POLYGONS_PER_SIDE = 50;
-    constexpr int TERRAIN_LENGTH = 100;
+    constexpr int TERRAIN_LENGTH = 150;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -128,7 +129,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     float prevTime = (float) glfwGetTime();
 
-    Patch::Patch terrain;
+    ModelTesselation::Model terrain;
     ShaderData terrainShader;
 
     //Sets the terrain model
@@ -149,33 +150,33 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         glUseProgram(0);
 
         //====
-        std::vector<Patch::Vertex> vertices;
+        std::vector<ModelTesselation::Vertex> vertices;
         generatePatch(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices);
-        terrain.meshes.emplace_back(vertices, std::vector<Patch::Texture>());
+        terrain.meshes.emplace_back(vertices, std::vector<ModelTesselation::Texture>());
         terrain.addEntity(terrainShader.program, projection);
         terrain.meshes[0].textures.emplace_back(
-            Patch::Texture{
+            ModelTesselation::Texture{
                 textureFromFile("iceland_heightmap.png", "./textures"),
                 "",
                 "",
             }
         );
         terrain.meshes[0].textures.emplace_back(
-            Patch::Texture{
+            ModelTesselation::Texture{
                 textureFromFile("grass.jpg", "./textures"),
                 "",
                 "",
             }
         );
         terrain.meshes[0].textures.emplace_back(
-            Patch::Texture{
+            ModelTesselation::Texture{
                 textureFromFile("rock.jpg", "./textures"),
                 "",
                 ""
             }
         );
         terrain.meshes[0].textures.emplace_back(
-            Patch::Texture{
+            ModelTesselation::Texture{
                 textureFromFile("snow.jpg", "./textures"),
                 "",
                 ""
@@ -188,6 +189,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     {
         float currTime = (float) glfwGetTime();
         float deltaTime = currTime - prevTime;
+        //std::cout << camera.position.x << " " << camera.position.y << " " << camera.position.z << "\n";
 
         // Clear colour and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -195,7 +197,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         // Draw your scene here
 
         // update view matrix with updated camera data
-        view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
+        view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
         updateTerrainShader(terrainShader, camera);
 

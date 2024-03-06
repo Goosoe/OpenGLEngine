@@ -1,7 +1,7 @@
-#include "Patch.h"
+#include "ModelTesselation.h"
 
 
-namespace Patch
+namespace ModelTesselation
 {
 /** MESH **/
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<Texture> textures) :
@@ -57,14 +57,14 @@ void Mesh::draw(GLuint shaderId)
 }
 
 /** MODEL **/
-Patch::Patch(){}
+Model::Model(){}
 
-void Patch::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation)
+void Model::addEntity(GLuint shaderId, glm::mat4 projection, glm::vec3 scale, glm::vec3 location, RotationData rotation)
 {
     entities.emplace_back(shaderId, projection, scale, location, rotation);
 }
 
-void Patch::drawEntities(glm::mat4& view)
+void Model::drawEntities(glm::mat4& view)
 {
     for(size_t i = 0; i < entities.size(); i++)
     {
@@ -80,7 +80,7 @@ void Patch::drawEntities(glm::mat4& view)
     }
 }
 
-void Patch::unloadData()
+void Model::unloadData()
 {
     for(size_t i = 0; i < meshes.size(); i++)
     {

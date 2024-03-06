@@ -23,7 +23,7 @@ void updateUniformsOfShaders(const std::vector<ShaderData>& shaders, const Camer
     { 
         GLuint program = shaders[i].program; 
         glUseProgram(program);
-        Shader::setVec3(program, "cameraPos", camera.Position);
+        Shader::setVec3(program, "cameraPos", camera.position);
         glUseProgram(0);
     }
 }
@@ -140,7 +140,7 @@ void runTeapotLevel(GLFWwindow* window)
         // Draw your scene here
 
         // update view matrix with updated camera data
-        view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
+        view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
         updateUniformsOfShaders(shaders, camera);
 
