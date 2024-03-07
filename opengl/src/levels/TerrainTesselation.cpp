@@ -34,9 +34,8 @@ void generatePatch(const float length, const int divPerSide, std::vector<ModelTe
     assert(divPerSide > 0 && " must be > 0");
     const float polygonLength = length / divPerSide;
 
-
-    FastNoiseLite noise;
-    noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    // FastNoiseLite noise;
+    // noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 
     //todo: normals not being used
     // const float uvCoord = length / divPerSide;
@@ -49,12 +48,13 @@ void generatePatch(const float length, const int divPerSide, std::vector<ModelTe
                                         0,
                                         polygonLength * y);   //z
 
-            glm::vec3 pos2 = glm::vec3(polygonLength * x,    //x
-                                        0,
-                                        polygonLength * y + polygonLength);   //z
-            glm::vec3 pos3 = glm::vec3(polygonLength * x + polygonLength,    //x
+            glm::vec3 pos2 = glm::vec3(polygonLength * x + polygonLength,    //x
                                         0,
                                         polygonLength * y);   //z
+
+            glm::vec3 pos3 = glm::vec3(polygonLength * x,    //x
+                                        0,
+                                        polygonLength * y + polygonLength);   //z
 
 
             glm::vec3 pos4 = glm::vec3(polygonLength * x + polygonLength,    //x
@@ -88,8 +88,8 @@ void generatePatch(const float length, const int divPerSide, std::vector<ModelTe
 void runTerrainTesselationLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 50;
-    constexpr int TERRAIN_LENGTH = 150;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 5;
+    constexpr int TERRAIN_LENGTH = 100;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -101,12 +101,12 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    // Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
     // Camera camera(glm::vec3(TERRAIN_LENGTH / 4, 8, TERRAIN_LENGTH / 4), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
     // Camera camera(glm::vec3(100.f, 8, 100.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
-    // Camera camera(glm::vec3(0, 3, 0), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    Camera camera(glm::vec3(50, 3, 0), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
-    constexpr float ambientLight = 0.4f;
+    constexpr float ambientLight = 0.5f;
     constexpr float specularVal = 0.1f;
 
     //Scene data
@@ -120,7 +120,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
-    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, TERRAIN_LENGTH / 4, 3);
+    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, 8, TERRAIN_LENGTH / 4);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);

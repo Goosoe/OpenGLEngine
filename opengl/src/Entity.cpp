@@ -11,13 +11,10 @@ Entity::Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale, glm:
 { 
     glUseProgram(shaderProgram);
     Shader::setProjectionUniform(shaderProgram, projectionMatrix);
-    modelMatrix = glm::mat4(1.f);
     modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationData.angle), rotationData.rotationAxis);
     modelMatrix = glm::translate(modelMatrix, location);
     modelMatrix = glm::scale(modelMatrix, scale);
-    //normalMatrix = transpose(inverse(glm::mat3(modelMatrix)));
     Shader::setModelUniform(shaderProgram, modelMatrix);
-    //Shader::setNormalMatrix(shaderProgram, normalMatrix);
     glUseProgram(0);
 }
 

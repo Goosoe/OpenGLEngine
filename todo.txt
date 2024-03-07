@@ -12,10 +12,12 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [] Make a program that converts noise to texture map/data to be used in opengl or do something like libnoise?
     - [x] Recreate Terrain level to TerrainTesselation then change as necessary
     - [x] Make it bigger + Optimize it 
-    - [] Make it infinite by repositioning the center of the mesh to the camera
+    - [] Make it procedurally generated
     - [x] Research fractal brownian motion for better map creation
+    - [] Implement normal calculation for terrain generated.
     - [] Add moving sunlight that affects shader shadowing effects
-    - [] Frustrum cullingn
+    - [] Frustrum culling
+    - [] Remove normals from VAO
     - [x] Refactor and clean code. ModelLoader namespace is handling manual mesh drawing which does not make sense. Either separate class/structs or make something specific for terrain level, idk
 
 # General
