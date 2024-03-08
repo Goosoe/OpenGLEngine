@@ -246,8 +246,10 @@ void Model::loadMaterialTextures(std::vector<Texture>& textures, aiMaterial *mat
         }
         if(!skip)
         {   // if texture hasn't been loaded already, load it
+            //does nothing
+            glm::vec2 texSize;
             texturesLoaded.emplace_back(Texture{
-                    textureFromFile(str.C_Str(), directory),
+                    textureFromFile(str.C_Str(), directory, texSize),
                     typeName,
                     str.C_Str()
                     }

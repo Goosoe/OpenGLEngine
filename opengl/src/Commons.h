@@ -40,4 +40,4 @@ void printGLError();
 /**
  * Loads a texture from path and retuns the textureID
  */
-unsigned int textureFromFile(const char *path, const std::string &directory);
+unsigned int textureFromFile(const char *filename, const std::string &directory, glm::vec2& texDimensions);

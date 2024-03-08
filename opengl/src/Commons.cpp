@@ -155,7 +155,8 @@ void printGLError() {
     }
 }
 
-unsigned int textureFromFile(const char *filename, const std::string &directory)
+//TODO: use texDimensions pointer and only fill it if not null
+unsigned int textureFromFile(const char *filename, const std::string &directory, glm::vec2& texDimensions)
 {
     std::string fullPath = std::string(filename);
     fullPath = directory + '/' + filename;
@@ -184,6 +185,8 @@ unsigned int textureFromFile(const char *filename, const std::string &directory)
     {
         format = GL_RGBA;
     }
+    texDimensions.x = width;
+    texDimensions.y = height;
 
     glBindTexture(GL_TEXTURE_2D, textureID);
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);

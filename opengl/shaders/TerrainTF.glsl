@@ -24,7 +24,7 @@ out vec4 fragColor;
 
 void main()
 {
-    fragColor = vec4(evalFrag.normal, 1);
+    fragColor = vec4(evalFrag.normal,1);
     return;
     vec3 lightDir = normalize(lightPos - evalFrag.fragPos);
 

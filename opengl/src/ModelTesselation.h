@@ -22,6 +22,7 @@ struct Texture
     GLuint id;
     std::string type;
     std::string path;
+    glm::vec2 texSize;
 };
 
 class Mesh {

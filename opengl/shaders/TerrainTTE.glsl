@@ -12,6 +12,7 @@ in CtrlEval{
 uniform mat4 model;           // the model matrix
 uniform mat4 view;            // the view matrix
 uniform mat4 projection;      // the projection matrix
+uniform float texelSize;      // the projection matrix
 // uniform mat3 normalMat;
 
 uniform sampler2D tex0; // heightmap
@@ -24,7 +25,7 @@ out EvalFrag
     vec2 uv;
 } evalFrag;
 
-const float HEIGHT_MULTIPLIER = 3.f;
+const float HEIGHT_SCALE = 3.f;
 
 void main()
 {
@@ -47,7 +48,7 @@ void main()
 
     // lookup texel at patch coordinate for height and scale + shift as desired
 
-    evalFrag.height = texture(tex0, texCoord).y * HEIGHT_MULTIPLIER;
+    evalFrag.height = texture(tex0, texCoord).y * HEIGHT_SCALE;
 
     // ----------------------------------------------------------------------
     // retrieve control point position coordinates
@@ -58,44 +59,50 @@ void main()
 
     // bilinearly interpolate position coordinate across patch
     //TODO: use TEXTURE COORDS NOT POINT COORDS
-    // vec4 p0 = mix(t01, t00, u - 0.1f);
-    // vec4 p1 = mix(t11, t10, u - 0.1f);
-    // vec4 pL = mix(t0, t1, v);
-    //
-    // p0 = mix(p01, p00, u + 0.1f);
-    // p1 = mix(p11, p10, u + 0.1f);
-    // vec4 pR = mix(p0, p1, v);
-    //
-    // p0 = mix(p01, p00, u);
-    // p1 = mix(p11, p10, u);
-    // vec4 pU = mix(p0, p1, v + 0.1f);
-    //
-    // p0 = mix(p01, p00, u);
-    // p1 = mix(p11, p10, u);
-    // vec4 pD = mix(p0, p1, v - 0.1f);
-    //
-    //
-    // p00.y = texture(tex0, pL.xy).y * HEIGHT_MULTIPLIER;
-    // p01.y = texture(tex0, pR.xy).y * HEIGHT_MULTIPLIER;
-    // p10.y = texture(tex0, pU.xy).y * HEIGHT_MULTIPLIER;
-    // p11.y = texture(tex0, pD.xy).y * HEIGHT_MULTIPLIER;
+    // vec2 tAdj0 = mix(t01, t00, u - 0.1f);
+    // vec2 tAdj1 = mix(t11, t10, u - 0.1f);
+    // vec2 tL = mix(tAdj0, tAdj1, v);
+    // 
+    // tAdj0 = mix(t01, t00, u + 0.1f);
+    // tAdj1 = mix(t11, t10, u + 0.1f);
+    // vec2 tR = mix(tAdj0, tAdj1, v);
+    // 
+    // tAdj0 = mix(t01, t00, u);
+    // tAdj1 = mix(t11, t10, u);
+    // vec2 tU = mix(tAdj0, tAdj1, v + 0.1f);
+    // 
+    // tAdj0 = mix(t01, t00, u);
+    // tAdj1 = mix(t11, t10, u);
+    // vec2 tD = mix(tAdj0, tAdj1, v - 0.1f);
+    // 
+    // 
+    // .y = texture(tex0, tL).y * HEIGHT_MULTIPLIER;
+    // .y = texture(tex0, tR).y * HEIGHT_MULTIPLIER;
+    // .y = texture(tex0, tU).y * HEIGHT_MULTIPLIER;
+    // .y = texture(tex0, tD).y * HEIGHT_MULTIPLIER;
 
+    //vertex position we are working on
     vec4 p0 = mix(p01, p00, u);
     vec4 p1 = mix(p11, p10, u);
     vec4 p = mix(p0, p1, v);
 
-    p00.y = texture(tex0, t00).y * HEIGHT_MULTIPLIER;
-    p01.y = texture(tex0, t01).y * HEIGHT_MULTIPLIER;
-    p10.y = texture(tex0, t10).y * HEIGHT_MULTIPLIER;
-    p11.y = texture(tex0, t11).y * HEIGHT_MULTIPLIER;
+    // p00.y = texture(tex0, t00) * HEIGHT_MULTIPLIER;
+    // p01.y = texture(tex0, t01) * HEIGHT_MULTIPLIER;
+    // p10.y = texture(tex0, t10) * HEIGHT_MULTIPLIER;
+    // p11.y = texture(tex0, t11) * HEIGHT_MULTIPLIER;
+    float left  = texture(tex0, texCoord + vec2(-texelSize, 0.0)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
+    float right = texture(tex0, texCoord + vec2(texelSize, 0.0)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
+    float up    = texture(tex0, texCoord + vec2(0.0, texelSize)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
+    float down  = texture(tex0, texCoord + vec2(0.0, -texelSize)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
+    evalFrag.normal = normalize(vec3(down - up, 2.0, left - right));
 
     // compute patch surface normal
-    vec4 uVec = p01 - p00;
-    vec4 vVec = p10 - p00;
-    evalFrag.normal = normalize(cross(vVec.xyz, uVec.xyz));
+   // vec4 uVec = p01 - p00;
+   // vec4 vVec = p10 - p00;
+   // evalFrag.normal = normalize(cross(vVec.xyz, uVec.xyz));
 
     // displace point along normal
-     p.y +=  evalFrag.height * 5;
+    p.y +=  evalFrag.height * HEIGHT_MULTIPLIER;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

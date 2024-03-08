@@ -17,11 +17,12 @@
 /**
  * iterates over shader vector and updates their common uniforms
  */
-void updateTerrainShader(const ShaderData& shader, const Camera& camera)
+void updateTerrainShader(const ShaderData& shader, const Camera& camera, const ModelTesselation::Model terrain) 
 {
        const GLuint program = shader.program;
        glUseProgram(program);
        Shader::setVec3(program, "cameraPos", camera.position);
+       Shader::setVec2(program, "texelSize", 1.f / terrain.meshes[0].textures[0].texSize);
        glUseProgram(0);
 }
 
@@ -101,10 +102,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    // Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
-    // Camera camera(glm::vec3(TERRAIN_LENGTH / 4, 8, TERRAIN_LENGTH / 4), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
-    // Camera camera(glm::vec3(100.f, 8, 100.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
-    Camera camera(glm::vec3(50, 3, 0), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
     constexpr float ambientLight = 0.5f;
     constexpr float specularVal = 0.1f;
@@ -151,35 +149,40 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
         //====
         std::vector<ModelTesselation::Vertex> vertices;
+        glm::vec2 texSize;
         generatePatch(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices);
         terrain.meshes.emplace_back(vertices, std::vector<ModelTesselation::Texture>());
         terrain.addEntity(terrainShader.program, projection);
         terrain.meshes[0].textures.emplace_back(
             ModelTesselation::Texture{
-                textureFromFile("iceland_heightmap.png", "./textures"),
+                textureFromFile("iceland_heightmap.png", "./textures", texSize),
                 "",
                 "",
+                texSize
             }
         );
         terrain.meshes[0].textures.emplace_back(
             ModelTesselation::Texture{
-                textureFromFile("grass.jpg", "./textures"),
+                textureFromFile("grass.jpg", "./textures", texSize),
                 "",
                 "",
+                texSize
             }
         );
         terrain.meshes[0].textures.emplace_back(
             ModelTesselation::Texture{
-                textureFromFile("rock.jpg", "./textures"),
+                textureFromFile("rock.jpg", "./textures", texSize),
                 "",
-                ""
+                "",
+                texSize
             }
         );
         terrain.meshes[0].textures.emplace_back(
             ModelTesselation::Texture{
-                textureFromFile("snow.jpg", "./textures"),
+                textureFromFile("snow.jpg", "./textures", texSize),
                 "",
-                ""
+                "",
+                texSize
             }
         );
     }
@@ -199,7 +202,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         // update view matrix with updated camera data
         view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
-        updateTerrainShader(terrainShader, camera);
+        updateTerrainShader(terrainShader, camera, terrain);
 
         terrain.drawEntities(view);
 

@@ -208,23 +208,25 @@ void runTerrainLevel(GLFWwindow* window)
         Terrain::generateSimpleMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
         terrain.meshes.emplace_back(vertices, indices, std::vector<Texture>());
         terrain.addEntity(terrainShader.program, projection);
+        //does nothing
+        glm::vec2 texSize;
         terrain.meshes[0].textures.emplace_back(
             Texture{
-                textureFromFile("grass.jpg", "./textures"),
+                textureFromFile("grass.jpg", "./textures", texSize),
                 "",
                 "",
             }
         );
         terrain.meshes[0].textures.emplace_back(
             Texture{
-                textureFromFile("rock.jpg", "./textures"),
+                textureFromFile("rock.jpg", "./textures", texSize),
                 "",
                 ""
             }
         );
         terrain.meshes[0].textures.emplace_back(
             Texture{
-                textureFromFile("snow.jpg", "./textures"),
+                textureFromFile("snow.jpg", "./textures", texSize),
                 "",
                 ""
             }
