@@ -37,7 +37,7 @@ class Entity
         Entity(GLuint shaderProgram, glm::mat4 projection, glm::vec3 scale = glm::vec3(1.f,1.f,1.f), 
                 glm::vec3 location = glm::vec3(0.f,0.f,0.f), RotationData = {0.f, glm::vec3(1.f)});
 
-        const glm::mat4& getEntityMat() const { return modelMatrix; }
+        const glm::mat4& getModelMat() const { return modelMatrix; }
 
         void setLocation(glm::vec3& location);
 

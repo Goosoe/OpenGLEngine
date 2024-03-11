@@ -5,7 +5,6 @@ layout(vertices=4) out;
 
 in VertControl{
     vec2 texCoord;
-    // vec3 normal;
 } vertControl[];
 
 uniform mat4 model;
@@ -14,7 +13,6 @@ uniform mat4 view;
 out CtrlEval
 {
     out vec2 texCoord;
-    // out vec3 normal;
 } ctrlEval[];
 
 void main()
@@ -65,5 +63,4 @@ void main()
 
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     ctrlEval[gl_InvocationID].texCoord = vertControl[gl_InvocationID].texCoord;
-    // ctrlEval[gl_InvocationID].normal = vertControl[gl_InvocationID].normal;
 }

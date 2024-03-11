@@ -1,5 +1,4 @@
 #include "TerrainTesselation.h"
-#include "FastNoiseLite.h"
 #include "GLFW/glfw3.h"
 #include <glad/glad.h>
 #include "Camera.h"
@@ -7,7 +6,6 @@
 #include "ModelTesselation.h"
 #include "Shader.h"
 #include <cassert>
-#include <iostream>
 
 // uncomment to disable assert()
 // #define NDEBUG
@@ -17,7 +15,7 @@
 /**
  * iterates over shader vector and updates their common uniforms
  */
-void updateTerrainShader(const ShaderData& shader, const Camera& camera, const ModelTesselation::Model terrain) 
+void updateTerrainShader(const ShaderData& shader, const Camera& camera) 
 {
        const GLuint program = shader.program;
        glUseProgram(program);
@@ -34,11 +32,6 @@ void generatePatch(const float length, const int divPerSide, std::vector<ModelTe
     assert(divPerSide > 0 && " must be > 0");
     const float polygonLength = length / divPerSide;
 
-    // FastNoiseLite noise;
-    // noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-
-    //todo: normals not being used
-    // const float uvCoord = length / divPerSide;
     for(int y = 0; y < divPerSide; y++)
     {
         for(int x = 0; x < divPerSide; x++)
@@ -90,6 +83,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     //Terrain settings
     constexpr int TERRAIN_POLYGONS_PER_SIDE = 50;
     constexpr int TERRAIN_LENGTH = 100;
+    constexpr float HEIGHT_SCALE = 10.f;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -103,7 +97,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
-    constexpr float ambientLight = 0.0f;
+    constexpr float ambientLight = 0.3f;
     constexpr float specularVal = 0.1f;
 
     //Scene data
@@ -144,6 +138,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         Shader::setVec3(terrainShader.program, "objColor", objColor);
         Shader::setFloat(terrainShader.program, "ambientVal", ambientLight);
         Shader::setFloat(terrainShader.program, "specularVal", specularVal);
+        Shader::setFloat(terrainShader.program, "heightScale", HEIGHT_SCALE);
         glUseProgram(0);
 
         //====
@@ -185,6 +180,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
             }
         );
         Shader::setVec2(terrainShader.program, "texelSize", 1.f / terrain.meshes[0].textures[0].texSize);
+        Shader::setMat3(terrainShader.program, "inverseModel", glm::inverse(glm::mat3(terrain.entities[0].getModelMat())));
     }
 
     // Rendering Loop
@@ -192,7 +188,6 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     {
         float currTime = (float) glfwGetTime();
         float deltaTime = currTime - prevTime;
-        //std::cout << camera.position.x << " " << camera.position.y << " " << camera.position.z << "\n";
 
         // Clear colour and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -203,7 +198,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         //todo: this is too resource heavy
         view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
-        updateTerrainShader(terrainShader, camera, terrain);
+        updateTerrainShader(terrainShader, camera);
 
         terrain.drawEntities(view);
 
