@@ -22,7 +22,6 @@ void updateTerrainShader(const ShaderData& shader, const Camera& camera, const M
        const GLuint program = shader.program;
        glUseProgram(program);
        Shader::setVec3(program, "cameraPos", camera.position);
-       Shader::setVec2(program, "texelSize", 1.f / terrain.meshes[0].textures[0].texSize);
        glUseProgram(0);
 }
 
@@ -46,20 +45,20 @@ void generatePatch(const float length, const int divPerSide, std::vector<ModelTe
         {
             //coords
             glm::vec3 pos1 = glm::vec3(polygonLength * x,    //x
-                                        0,
+                                        0.f,
                                         polygonLength * y);   //z
 
             glm::vec3 pos2 = glm::vec3(polygonLength * x + polygonLength,    //x
-                                        0,
+                                        0.f,
                                         polygonLength * y);   //z
 
             glm::vec3 pos3 = glm::vec3(polygonLength * x,    //x
-                                        0,
+                                        0.f,
                                         polygonLength * y + polygonLength);   //z
 
 
             glm::vec3 pos4 = glm::vec3(polygonLength * x + polygonLength,    //x
-                                        0,
+                                        0.f,
                                         polygonLength * y + polygonLength);   //z
 
             vertices.emplace_back(ModelTesselation::Vertex{
@@ -89,7 +88,7 @@ void generatePatch(const float length, const int divPerSide, std::vector<ModelTe
 void runTerrainTesselationLevel(GLFWwindow* window)
 {
     //Terrain settings
-    constexpr int TERRAIN_POLYGONS_PER_SIDE = 5;
+    constexpr int TERRAIN_POLYGONS_PER_SIDE = 50;
     constexpr int TERRAIN_LENGTH = 100;
 
     // GL settings
@@ -104,7 +103,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
 
     Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 8, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
-    constexpr float ambientLight = 0.5f;
+    constexpr float ambientLight = 0.0f;
     constexpr float specularVal = 0.1f;
 
     //Scene data
@@ -118,7 +117,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
-    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, 8, TERRAIN_LENGTH / 4);
+    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, 15, TERRAIN_LENGTH / 4);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -185,6 +184,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
                 texSize
             }
         );
+        Shader::setVec2(terrainShader.program, "texelSize", 1.f / terrain.meshes[0].textures[0].texSize);
     }
 
     // Rendering Loop
@@ -200,6 +200,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         // Draw your scene here
 
         // update view matrix with updated camera data
+        //todo: this is too resource heavy
         view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
         updateTerrainShader(terrainShader, camera, terrain);

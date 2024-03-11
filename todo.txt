@@ -20,6 +20,9 @@ replace assimp with https://github.com/tinyobjloader/tinyobjloader
     - [] Remove normals from VAO
     - [x] Refactor and clean code. ModelLoader namespace is handling manual mesh drawing which does not make sense. Either separate class/structs or make something specific for terrain level, idk
 
+# RayTracing
+    - [] Implement a ray tracing algorithm
+
 # General
     - [] Add imgui to project
     - [] Add level switch on main.cpp

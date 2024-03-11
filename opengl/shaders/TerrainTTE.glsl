@@ -6,26 +6,26 @@ layout (quads, fractional_odd_spacing, ccw) in;
 // received from Tessellation Control Shader - all texture coordinates for the patch vertices
 in CtrlEval{
     vec2 texCoord;
-    vec3 normal;
+    // vec3 normal;
 } ctrlEval[];
 
 uniform mat4 model;           // the model matrix
 uniform mat4 view;            // the view matrix
 uniform mat4 projection;      // the projection matrix
-uniform float texelSize;      // the projection matrix
+// uniform float texelSize;
 // uniform mat3 normalMat;
 
 uniform sampler2D tex0; // heightmap
 
 out EvalFrag
 {
-    vec3 normal;
+    // vec3 normal;
     float height;
     vec3 fragPos;
     vec2 uv;
 } evalFrag;
 
-const float HEIGHT_SCALE = 3.f;
+const float HEIGHT_SCALE = 10.f;
 
 void main()
 {
@@ -48,7 +48,7 @@ void main()
 
     // lookup texel at patch coordinate for height and scale + shift as desired
 
-    evalFrag.height = texture(tex0, texCoord).y * HEIGHT_SCALE;
+    evalFrag.height = texture(tex0, texCoord).r;// * HEIGHT_SCALE;
 
     // ----------------------------------------------------------------------
     // retrieve control point position coordinates
@@ -90,19 +90,13 @@ void main()
     // p01.y = texture(tex0, t01) * HEIGHT_MULTIPLIER;
     // p10.y = texture(tex0, t10) * HEIGHT_MULTIPLIER;
     // p11.y = texture(tex0, t11) * HEIGHT_MULTIPLIER;
-    float left  = texture(tex0, texCoord + vec2(-texelSize, 0.0)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
-    float right = texture(tex0, texCoord + vec2(texelSize, 0.0)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
-    float up    = texture(tex0, texCoord + vec2(0.0, texelSize)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
-    float down  = texture(tex0, texCoord + vec2(0.0, -texelSize)).r * HEIGHT_SCALE; //* 2.0 - 1.0;
-    evalFrag.normal = normalize(vec3(down - up, 2.0, left - right));
 
     // compute patch surface normal
    // vec4 uVec = p01 - p00;
    // vec4 vVec = p10 - p00;
    // evalFrag.normal = normalize(cross(vVec.xyz, uVec.xyz));
 
-    // displace point along normal
-    p.y +=  evalFrag.height * HEIGHT_MULTIPLIER;
+    p.y +=  evalFrag.height * HEIGHT_SCALE;
 
     // ----------------------------------------------------------------------
     // output patch point position in clip space

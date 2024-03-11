@@ -5,7 +5,7 @@ layout(vertices=4) out;
 
 in VertControl{
     vec2 texCoord;
-    vec3 normal;
+    // vec3 normal;
 } vertControl[];
 
 uniform mat4 model;
@@ -14,7 +14,7 @@ uniform mat4 view;
 out CtrlEval
 {
     out vec2 texCoord;
-    out vec3 normal;
+    // out vec3 normal;
 } ctrlEval[];
 
 void main()
@@ -24,10 +24,10 @@ void main()
     {
         // define constants to control tessellation parameters
         // set these as desired for your world scale
-        const int MIN_TESS_LEVEL = 4;
-        const int MAX_TESS_LEVEL = 64;
+        const int MIN_TESS_LEVEL = 8;
+        const int MAX_TESS_LEVEL = 32;
         const float MIN_DISTANCE = 20;
-        const float MAX_DISTANCE = 800;
+        const float MAX_DISTANCE = 100;
 
         // ----------------------------------------------------------------------
         // transform each vertex into eye space
@@ -38,16 +38,16 @@ void main()
 
         // ----------------------------------------------------------------------
         //  "distance" from camera scaled between 0 and 1
-        float distance00 = clamp((abs(eyeSpacePos00.z) - MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
-        float distance01 = clamp((abs(eyeSpacePos01.z) - MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
-        float distance10 = clamp((abs(eyeSpacePos10.z) - MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
-        float distance11 = clamp((abs(eyeSpacePos11.z) - MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
+        float distance00 = clamp((length(eyeSpacePos00.xyz) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        float distance01 = clamp((length(eyeSpacePos01.xyz) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        float distance10 = clamp((length(eyeSpacePos10.xyz) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        float distance11 = clamp((length(eyeSpacePos11.xyz) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 
         // ----------------------------------------------------------------------
         // interpolate edge tessellation level based on closer vertex
-        float tessLevel0 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00));
+        float tessLevel0 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11));
         float tessLevel1 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01));
-        float tessLevel2 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11));
+        float tessLevel2 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00));
         float tessLevel3 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance11, distance10));
 
         // ----------------------------------------------------------------------
@@ -65,5 +65,5 @@ void main()
 
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     ctrlEval[gl_InvocationID].texCoord = vertControl[gl_InvocationID].texCoord;
-    ctrlEval[gl_InvocationID].normal = vertControl[gl_InvocationID].normal;
+    // ctrlEval[gl_InvocationID].normal = vertControl[gl_InvocationID].normal;
 }
