@@ -10,6 +10,9 @@ in VertControl{
 uniform mat4 model;
 uniform mat4 view;
 
+uniform float fovCos;
+const int outOfFrustumTessLevel = 0;
+
 out CtrlEval
 {
     out vec2 texCoord;
@@ -48,6 +51,24 @@ void main()
         float tessLevel2 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00));
         float tessLevel3 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance11, distance10));
 
+        // calculate cos of the angle between the camera and -z(0.0, 0.0, -1.0)
+        float cosAngle00 = dot(normalize(eyeSpacePos00.xyz), vec3(0.0, 0.0, -1.0));
+        float cosAngle01 = dot(normalize(eyeSpacePos01.xyz), vec3(0.0, 0.0, -1.0));
+        float cosAngle10 = dot(normalize(eyeSpacePos10.xyz), vec3(0.0, 0.0, -1.0));
+        float cosAngle11 = dot(normalize(eyeSpacePos11.xyz), vec3(0.0, 0.0, -1.0));
+
+
+        // Outside the view frustum
+        if (cosAngle00 <= fovCos &&
+            cosAngle01 <= fovCos &&
+            cosAngle10 <= fovCos &&
+            cosAngle11 <= fovCos)
+        {
+            tessLevel0 = outOfFrustumTessLevel;
+            tessLevel1 = outOfFrustumTessLevel;
+            tessLevel2 = outOfFrustumTessLevel;
+            tessLevel3 = outOfFrustumTessLevel;
+        }
         // ----------------------------------------------------------------------
         // set the corresponding outer edge tessellation levels
         gl_TessLevelOuter[0] = tessLevel0;

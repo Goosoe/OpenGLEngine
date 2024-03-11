@@ -123,6 +123,9 @@ void runTerrainTesselationLevel(GLFWwindow* window)
     ModelTesselation::Model terrain;
     ShaderData terrainShader;
 
+    float fovScale = 0.9f; 
+    float fov = glm::radians(camera.zoom);
+    float fovCos = glm::cos(fov * fovScale);
     //Sets the terrain model
     {
         terrainShader.program = Shader::createProgram();
@@ -139,6 +142,7 @@ void runTerrainTesselationLevel(GLFWwindow* window)
         Shader::setFloat(terrainShader.program, "ambientVal", ambientLight);
         Shader::setFloat(terrainShader.program, "specularVal", specularVal);
         Shader::setFloat(terrainShader.program, "heightScale", HEIGHT_SCALE);
+        Shader::setFloat(terrainShader.program, "fovCos", fovCos);
         glUseProgram(0);
 
         //====
