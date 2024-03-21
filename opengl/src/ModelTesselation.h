@@ -45,7 +45,7 @@ private:
 };  
 
 /**
- * A model will hold information about all the necessary data for it to be rendered in a scene. 
+ * A model will hold information about all the necessary data for it to be rendered in a scene. This class is specialized for the tesselation level.
  * It will also hold information regarding entities of itself that are present in the scene
  */
 class Model 

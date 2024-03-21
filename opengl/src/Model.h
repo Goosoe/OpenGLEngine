@@ -1,3 +1,5 @@
+#pragma once 
+
 #include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
@@ -49,17 +51,20 @@ public:
 
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
+    Mesh(std::vector<Vertex> vertices, std::vector<Texture> textures);
+
     //Draws loaded meshes
     void drawLoaded(GLuint shaderProgram);
-    //Draws handmade meshes 
-    //void drawHandmade(GLuint shaderProgram);
+
 private:
 
     void setupMesh();
+    void setupMeshNoIndices();
 };  
 
 /**
  * A model will hold information about all the necessary data for it to be rendered in a scene. 
+ * Assimp loaded models will be converted to a Model of this type.
  * It will also hold information regarding entities of itself that are present in the scene
  */
 class Model 
