@@ -138,15 +138,16 @@ void runShadowLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    Camera camera(glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
-    // Camera camera(glm::vec3(TERRAIN_LENGTH / 2, 3, TERRAIN_LENGTH / 2), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    // Camera camera(glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    Camera camera(glm::vec3(TERRAIN_LENGTH / 4, 10, TERRAIN_LENGTH / 4), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
 
     constexpr float ambientLight = 0.4f;
     constexpr float specularVal = 0.1f;
 
     //Scene data
     const glm::vec3 lightColor (1.f, 1.f, 1.f);
-    const glm::vec3 objColor (0.f, 1.f, 0.f);
+    const glm::vec3 terrainColor (0.f, 1.f, 0.f);
+    const glm::vec3 cubeColor (1.f, 0.f, 0.f);
 
     //TODO: add resizable window feature
     glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
@@ -169,9 +170,10 @@ void runShadowLevel(GLFWwindow* window)
     Model terrain;
     Model cubeModel;
     ShaderData terrainShader;
+    ShaderData cubeShader;
     // std::vector<ShaderData> shaders;
 
-    //Prepares the basic shader program
+    //Prepares the terrain shader program
     {
         terrainShader.program = Shader::createProgram();
         Shader::makeBasicShader(terrainShader, "./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
@@ -179,9 +181,24 @@ void runShadowLevel(GLFWwindow* window)
         glUseProgram(terrainShader.program);
         Shader::setVec3(terrainShader.program, "lightPos", lightPos);
         Shader::setVec3(terrainShader.program, "lightColor", lightColor);
-        Shader::setVec3(terrainShader.program, "objColor", objColor);
+        Shader::setVec3(terrainShader.program, "objColor", terrainColor);
         Shader::setFloat(terrainShader.program, "ambientVal", ambientLight);
         Shader::setFloat(terrainShader.program, "specularVal", specularVal);
+        glUseProgram(0);
+    }
+
+    //Prepares the cube shader program
+    {
+
+        cubeShader.program = Shader::createProgram();
+        Shader::makeBasicShader(cubeShader, "./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+
+        glUseProgram(cubeShader.program);
+        Shader::setVec3(cubeShader.program, "lightPos", lightPos);
+        Shader::setVec3(cubeShader.program, "lightColor", lightColor);
+        Shader::setVec3(cubeShader.program, "objColor", cubeColor);
+        Shader::setFloat(cubeShader.program, "ambientVal", ambientLight);
+        Shader::setFloat(cubeShader.program, "specularVal", specularVal);
         glUseProgram(0);
     }
 
@@ -193,59 +210,14 @@ void runShadowLevel(GLFWwindow* window)
         Shadow::generateSimpleMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
         terrain.meshes.emplace_back(vertices, indices, std::vector<Texture>());
         terrain.addEntity(terrainShader.program, projection);
-        //does nothing
-        //glm::vec2 texSize;
-        // terrain.meshes[0].textures.emplace_back(
-        //     Texture{
-        //         textureFromFile("grass.jpg", "./textures", texSize),
-        //         "",
-        //         "",
-        //     }
-        // );
-        // terrain.meshes[0].textures.emplace_back(
-        //     Texture{
-        //         textureFromFile("rock.jpg", "./textures", texSize),
-        //         "",
-        //         ""
-        //     }
-        // );
-        // terrain.meshes[0].textures.emplace_back(
-        //     Texture{
-        //         textureFromFile("snow.jpg", "./textures", texSize),
-        //         "",
-        //         ""
-        //     }
-        // );
     }
+
     //Sets the cube model
     {
         //====
-        // Shadow::generateSimpleMesh(TERRAIN_LENGTH, TERRAIN_POLYGONS_PER_SIDE, vertices, indices);
         cubeModel.meshes.emplace_back(ModelData::cube, std::vector<Texture>());
-        cubeModel.addEntity(terrainShader.program, projection, glm::vec3(5.f));
-        //does nothing
-        //glm::vec2 texSize;
-        // terrain.meshes[0].textures.emplace_back(
-        //     Texture{
-        //         textureFromFile("grass.jpg", "./textures", texSize),
-        //         "",
-        //         "",
-        //     }
-        // );
-        // terrain.meshes[0].textures.emplace_back(
-        //     Texture{
-        //         textureFromFile("rock.jpg", "./textures", texSize),
-        //         "",
-        //         ""
-        //     }
-        // );
-        // terrain.meshes[0].textures.emplace_back(
-        //     Texture{
-        //         textureFromFile("snow.jpg", "./textures", texSize),
-        //         "",
-        //         ""
-        //     }
-        // );
+        constexpr float scale = 10.f;
+        cubeModel.addEntity(cubeShader.program, projection, glm::vec3(scale), glm::vec3(TERRAIN_LENGTH / 2, scale * .5f, TERRAIN_LENGTH / 2));
     }
 
     // Rendering Loop
@@ -259,10 +231,11 @@ void runShadowLevel(GLFWwindow* window)
 
         // Draw your scene here
 
-        // update view matrix with updated camera data
+        // update view matrix with updated camera datashadow.cpp
         view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
         Shadow::updateTerrainShader(terrainShader, camera);
+        
         terrain.drawEntities(view, &Shadow::drawTerrainEntity);
         cubeModel.drawEntities(view, &Shadow::drawCubeEntity);
 
