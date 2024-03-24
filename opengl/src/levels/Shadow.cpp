@@ -13,7 +13,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cassert>
-#include <iostream>
 
 // uncomment to disable assert()
 // #define NDEBUG
@@ -33,6 +32,7 @@ void drawCubeEntity(GLuint shaderId, Mesh& mesh)
     glDrawArrays(GL_TRIANGLES, 0, mesh.vertices.size());
     glBindVertexArray(0);
 }
+
 void drawTerrainEntity(GLuint shaderId, Mesh& mesh)
 {
     // draw mesh 
@@ -44,14 +44,19 @@ void drawTerrainEntity(GLuint shaderId, Mesh& mesh)
 /**
  * iterates over shader vector and updates their common uniforms
  */
-void updateTerrainShader(const ShaderData& shader, const Camera& camera)
+void updateRenderShader(const GLuint shader, const Camera& camera)
 {
-        const GLuint program = shader.program;
-        glUseProgram(program);
-        Shader::setVec3(program, "cameraPos", camera.position);
-        glUseProgram(0);
+    glUseProgram(shader);
+    Shader::setVec3(shader, "cameraPos", camera.position);
+    glUseProgram(0);
 }
 
+void updateShadowMapUniforms(const GLuint shadowMapShader, const glm::mat4& entityModel)
+{
+    glUseProgram(shadowMapShader);
+    Shader::setMat4(shadowMapShader, "model", entityModel);
+    glUseProgram(0);
+}
 /**
 * Procedurally generates a mesh of given parameters
 */
@@ -118,7 +123,6 @@ void generateSimpleMesh(const float length, const int divPerSide, std::vector<Ve
         vertices[i].normal = glm::normalize(vertices[i].normal / glm::vec3(indicesRepeated[i]));
     }
 }
-
 }; //Shadow namespace
 
 void runShadowLevel(GLFWwindow* window)
@@ -127,6 +131,8 @@ void runShadowLevel(GLFWwindow* window)
     //Terrain settings
     constexpr int TERRAIN_POLYGONS_PER_SIDE = 1;
     constexpr int TERRAIN_LENGTH = 50;
+    constexpr float NEAR_PLANE = 1.0f;
+    constexpr float FAR_PLANE = 100.f;
 
     // GL settings
     glEnable(GL_DEPTH_TEST);
@@ -140,6 +146,30 @@ void runShadowLevel(GLFWwindow* window)
 
     // Camera camera(glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
     Camera camera(glm::vec3(TERRAIN_LENGTH / 4, 10, TERRAIN_LENGTH / 4), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
+    //TODO: Make api for framebuffer creation
+    unsigned int depthMapFBO;
+    unsigned int depthMap;
+    constexpr int SHADOW_WIDTH = 1024;
+    constexpr int SHADOW_HEIGHT = 1024;
+    //Create framebuffer for depth map
+    {
+        glGenFramebuffers(1, &depthMapFBO);  
+
+        glGenTextures(1, &depthMap);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
+                     SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);  
+
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+    }
 
     constexpr float ambientLight = 0.4f;
     constexpr float specularVal = 0.1f;
@@ -156,7 +186,7 @@ void runShadowLevel(GLFWwindow* window)
     setupWindowData(&camera, SCR_WIDTH / 2.0f, SCR_HEIGHT / 2.0f);
 
     glm::mat4 view(1.f);
-    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, TERRAIN_LENGTH / 4, 3);
+    const glm::vec3 lightPos (TERRAIN_LENGTH / 4, TERRAIN_LENGTH / 4, 7);
 
     //TODO: set framebuffersize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -169,25 +199,51 @@ void runShadowLevel(GLFWwindow* window)
     // std::vector<Model> models;
     Model terrain;
     Model cubeModel;
+    //Final render shaders
     ShaderData terrainShader;
     ShaderData cubeShader;
-    // std::vector<ShaderData> shaders;
+    //Depth map shader pass
+    ShaderData shadowMapPassShader;
+    //Depth map display shader pass
+    ShaderData shadowMapRenderShader;
 
-    //Prepares the terrain shader program
+    //required for rendering the shadowMapRenderShader. As for running a shader properly, it requires a VAO, even if not used
+    GLuint emptyVAO; 
+    glGenVertexArrays(1, &emptyVAO); 
+    glm::mat4 lightSpaceMatrix;
+
+    //Prepares the shadow map pass program
+    {
+        shadowMapPassShader.program = Shader::createProgram();
+        Shader::makeBasicShader(shadowMapPassShader, "./opengl/shaders/shadow/ShadowmapPassV.glsl", "./opengl/shaders/shadow/ShadowmapPassF.glsl");
+
+        glm::mat4 lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, NEAR_PLANE, FAR_PLANE);
+        glm::mat4 lightView = glm::lookAt(lightPos,
+                                          glm::vec3( TERRAIN_LENGTH / 2 , 0.0f,  TERRAIN_LENGTH / 2), 
+                                          glm::vec3( 0.0f, 1.0f,  0.0f)); 
+        lightSpaceMatrix = lightProjection * lightView;
+
+        glUseProgram(shadowMapPassShader.program);
+        Shader::setMat4(shadowMapPassShader.program, "lightSpaceMatrix", lightSpaceMatrix);
+        glUseProgram(0);
+    }
+
+    //Prepares the render terrain shader program
     {
         terrainShader.program = Shader::createProgram();
-        Shader::makeBasicShader(terrainShader, "./opengl/shaders/BasicV.glsl", "./opengl/shaders/BasicF.glsl");
+        Shader::makeBasicShader(terrainShader, "./opengl/shaders/shadow/ShadowModelV.glsl", "./opengl/shaders/shadow/ShadowModelF.glsl");
 
         glUseProgram(terrainShader.program);
         Shader::setVec3(terrainShader.program, "lightPos", lightPos);
         Shader::setVec3(terrainShader.program, "lightColor", lightColor);
         Shader::setVec3(terrainShader.program, "objColor", terrainColor);
+        Shader::setMat4(terrainShader.program, "lightSpace", lightSpaceMatrix);
         Shader::setFloat(terrainShader.program, "ambientVal", ambientLight);
         Shader::setFloat(terrainShader.program, "specularVal", specularVal);
         glUseProgram(0);
     }
 
-    //Prepares the cube shader program
+    //Prepares the render cube shader program
     {
 
         cubeShader.program = Shader::createProgram();
@@ -197,10 +253,22 @@ void runShadowLevel(GLFWwindow* window)
         Shader::setVec3(cubeShader.program, "lightPos", lightPos);
         Shader::setVec3(cubeShader.program, "lightColor", lightColor);
         Shader::setVec3(cubeShader.program, "objColor", cubeColor);
+        Shader::setMat4(terrainShader.program, "lightSpace", lightSpaceMatrix);
         Shader::setFloat(cubeShader.program, "ambientVal", ambientLight);
         Shader::setFloat(cubeShader.program, "specularVal", specularVal);
         glUseProgram(0);
     }
+
+    //Prepares the shader to show the result of the render pass 
+    {
+        shadowMapRenderShader.program = Shader::createProgram();
+        Shader::makeBasicShader(shadowMapRenderShader, "./opengl/shaders/shadow/ShadowmapDepthShowV.glsl", "./opengl/shaders/shadow/ShadowmapDepthShowF.glsl");
+
+        glUseProgram(shadowMapRenderShader.program);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glUseProgram(0);
+    }
+
 
     //Sets the terrain model
     {
@@ -227,18 +295,82 @@ void runShadowLevel(GLFWwindow* window)
         float deltaTime = currTime - prevTime;
 
         // Clear colour and depth buffers
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Draw your scene here
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update view matrix with updated camera datashadow.cpp
         view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
 
-        Shadow::updateTerrainShader(terrainShader, camera);
-        
-        terrain.drawEntities(view, &Shadow::drawTerrainEntity);
-        cubeModel.drawEntities(view, &Shadow::drawCubeEntity);
+        // Draw your scene here
+        //Depth map pass
+        { 
+            glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+            glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, depthMap);
 
+            for(int i = 0; i < cubeModel.entities.size(); i++)
+            {
+                Shadow::updateShadowMapUniforms(shadowMapPassShader.program, cubeModel.entities[i].getModelMat());
+                glUseProgram(shadowMapPassShader.program);
+                for(unsigned int j = 0; j < cubeModel.meshes.size(); j++)
+                {
+                    Shadow::drawCubeEntity(shadowMapPassShader.program, cubeModel.meshes[j]);
+                }
+                glUseProgram(0);
+            }
+
+            for(int i = 0; i < terrain.entities.size(); i++)
+            {
+                Shadow::updateShadowMapUniforms(shadowMapPassShader.program, terrain.entities[i].getModelMat());
+                glUseProgram(shadowMapPassShader.program);
+                for(unsigned int j = 0; j < terrain.meshes.size(); j++)
+                {
+                    Shadow::drawTerrainEntity(shadowMapPassShader.program, terrain.meshes[j]);
+                }
+                glUseProgram(0);
+            }
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glActiveTexture(0);
+        }
+
+
+        //TODO: Make a toggle button to switch between passes
+        //Depth debug Render Pass
+       // {
+       //      glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+       //      // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+       //      glDisable(GL_DEPTH_TEST);
+       //      glClear(GL_COLOR_BUFFER_BIT);
+       //      glBindVertexArray(emptyVAO);
+       //      glUseProgram(shadowMapRenderShader.program);
+       //
+       //      glActiveTexture(GL_TEXTURE0);
+       //      glBindTexture(GL_TEXTURE_2D, depthMap);
+       //
+       //      glDrawArrays(GL_TRIANGLES, 0, 3);
+       //      glUseProgram(0);
+       //      glBindVertexArray(0);
+       //      glEnable(GL_DEPTH_TEST);
+       // }
+
+        //Render Pass
+       {
+            glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            Shadow::updateRenderShader(terrainShader.program, camera);
+            Shadow::updateRenderShader(cubeShader.program, camera);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, depthMap);
+            terrain.drawEntities(view, &Shadow::drawTerrainEntity);
+            cubeModel.drawEntities(view, &Shadow::drawCubeEntity);
+            glActiveTexture(0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+       }
         prevTime = currTime;
 
         // Handle other events

@@ -7,15 +7,18 @@ layout (location = 2) in vec2 aTexCoord;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightSpace;
 //to avoid deformations of the normals during scaling or modifications during a translation
 uniform mat3 normalMat;
 
 out vec3 normal;
 out vec3 fragPos;
+out vec4 fragPosLightSpace;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0f);
     normal = normalMat * aNormal;
     fragPos = vec3(model * vec4(aPos, 1.0));
+    fragPosLightSpace = lightSpace * vec4(fragPos, 1.0);
 }

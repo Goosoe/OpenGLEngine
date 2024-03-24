@@ -19,14 +19,14 @@ class Entity
         glm::mat4 modelMatrix;
         // normal matrix - in case we need it, it is here
         //glm::mat3 normalMatrix;
+        //location of the entity on the scene
+        glm::vec3 location;
         // scale of the object on the scene
         glm::vec3 scale;
         // rotation of the object on the scene
         RotationData rotationData;
 
     public:
-        //location of the entity on the scene
-        glm::vec3 location;
         
         //stores the shader program Id it will use
         GLuint shaderProgram;
