@@ -14,20 +14,37 @@ uniform sampler2D depthTex;
 
 out vec4 fragColor;
 
-const float bias = 0.005;
 
-float calculateShadow()
+// Calculates the shadow for the color calculation. Returns the inverse of the shadow
+float calculateShadow(vec3 lightDir)
 {
-    // perform perspective divide
+    // perform perspective divide. This is not needed for orthographic light matrix as it does not affect anything
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+
+    if(projCoords.z > 1.0)
+        return 1.0;
+
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(depthTex, projCoords.xy).r; 
+    float lightDepth = texture(depthTex, projCoords.xy).r; 
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
-    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;  
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    //float shadow = currentDepth - bias > lightDepth  ? 1.0 : 0.0;  
+    //PCF - percentage closest filtering implementation
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(depthTex, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(depthTex, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
     return 1.f - shadow;
 }
 
@@ -44,7 +61,7 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularVal * spec * lightColor;
 
-    float shadow = calculateShadow();
+    float shadow = calculateShadow(lightDir);
     vec3 color = ((ambientVal * lightColor) + (shadow) + diffuse + specular) * objColor;
     fragColor = vec4(color, 1.f);
 }
