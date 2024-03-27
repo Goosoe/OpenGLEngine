@@ -32,7 +32,6 @@ float calculateShadow(vec3 lightDir)
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    //float shadow = currentDepth - bias > lightDepth  ? 1.0 : 0.0;  
     //PCF - percentage closest filtering implementation
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthTex, 0);
@@ -40,9 +39,9 @@ float calculateShadow(vec3 lightDir)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(depthTex, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
-        }    
+            float pcfDepth = texture(depthTex, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
     }
     shadow /= 9.0;
     return 1.f - shadow;

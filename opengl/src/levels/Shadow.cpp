@@ -127,7 +127,6 @@ void generateSimpleMesh(const float length, const int divPerSide, std::vector<Ve
 
 void runShadowLevel(GLFWwindow* window)
 {
-    //TODO: change variable names
     //Terrain settings
     constexpr int TERRAIN_POLYGONS_PER_SIDE = 1;
     constexpr int TERRAIN_LENGTH = 50;
@@ -144,7 +143,6 @@ void runShadowLevel(GLFWwindow* window)
 
     //required variables/ consts
 
-    // Camera camera(glm::vec3(0.f), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
     Camera camera(glm::vec3(TERRAIN_LENGTH / 4, 10, TERRAIN_LENGTH / 4), glm::vec3(0.0f, 1.0f, 0.0f), 0, -10);
     //TODO: Make api for framebuffer creation
     unsigned int depthMapFBO;
@@ -198,7 +196,6 @@ void runShadowLevel(GLFWwindow* window)
     float prevTime = (float) glfwGetTime();
 
     //setup data vectors
-    // std::vector<Model> models;
     Model terrain;
     Model cubeModel;
     //Final render shaders
@@ -261,16 +258,15 @@ void runShadowLevel(GLFWwindow* window)
         glUseProgram(0);
     }
 
-    //Prepares the shader to show the result of the render pass 
-    {
-        shadowMapRenderShader.program = Shader::createProgram();
-        Shader::makeBasicShader(shadowMapRenderShader, "./opengl/shaders/shadow/ShadowmapDepthShowV.glsl", "./opengl/shaders/shadow/ShadowmapDepthShowF.glsl");
-
-        glUseProgram(shadowMapRenderShader.program);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
-        glUseProgram(0);
-    }
-
+    //Prepares the shader to show the result of the render pass (DEBUG ONLY)
+    // {
+    //     shadowMapRenderShader.program = Shader::createProgram();
+    //     Shader::makeBasicShader(shadowMapRenderShader, "./opengl/shaders/shadow/ShadowmapDepthShowV.glsl", "./opengl/shaders/shadow/ShadowmapDepthShowF.glsl");
+    //
+    //     glUseProgram(shadowMapRenderShader.program);
+    //     glBindTexture(GL_TEXTURE_2D, depthMap);
+    //     glUseProgram(0);
+    // }
 
     //Sets the terrain model
     {
@@ -295,9 +291,6 @@ void runShadowLevel(GLFWwindow* window)
     {
         float currTime = (float) glfwGetTime();
         float deltaTime = currTime - prevTime;
-
-        // Clear colour and depth buffers
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update view matrix with updated camera datashadow.cpp
         view = glm::lookAt(camera.position, camera.position + camera.front, camera.up);
@@ -361,7 +354,6 @@ void runShadowLevel(GLFWwindow* window)
         //Render Pass
        {
             glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             Shadow::updateRenderShader(terrainShader.program, camera);
             Shadow::updateRenderShader(cubeShader.program, camera);
